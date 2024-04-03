@@ -46,7 +46,7 @@ The APIs will utilize databases such as Postgres, MySQL, or MongoDB, ensuring ro
 ### Stack and Technologies Used
 
 - Docker
-- C++, Rust, Python, Java, Go, Ruby, PHP, Scala, Clojure, OCaml, Node.js
+- Rust
 - Nginx
 - Gatling
 
