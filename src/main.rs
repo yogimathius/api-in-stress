@@ -38,6 +38,8 @@ async fn count_warriors(storage: Extension<Storage>) -> impl IntoResponse {
 #[tokio::main]
 async fn main() {
     let storage = storage::Storage::new();
+    storage.initialize_data().await;
+
     let app = Router::new()
         .route("/warrior", post(create_warrior) )
         .route("/warrior/:id", get(get_warrior))

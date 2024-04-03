@@ -43,4 +43,24 @@ impl Storage {
     pub async fn count_warriors(&self) -> usize {
         self.warriors.lock().unwrap().len()
     }
+
+    pub async fn initialize_data(&self) {
+        let mut warriors = Vec::new();
+
+        for i in 1..=25 {
+            let warrior = Warrior {
+                id: i.to_string(),
+                name: format!("Warrior {}", i),
+                dob: format!("19{:02}-{:02}-{:02}", i % 100, (i * 2) % 12 + 1, (i * 3) % 28 + 1),
+                fight_skills: vec![format!("Skill {}", i * 2), format!("Skill {}", i * 2 + 1)],
+            };
+        
+            warriors.push(warrior);
+        }
+        
+        
+        for warrior in warriors {
+            self.create_warrior(warrior).await;
+        }
+    }
 }
