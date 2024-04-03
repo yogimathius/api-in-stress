@@ -32,7 +32,9 @@ async fn search_warriors(storage: Extension<Storage>) -> impl IntoResponse {
 async fn count_warriors(storage: Extension<Storage>) -> impl IntoResponse {
     println!("Warriors counted");
     // TODO - Error handling
-    storage.count_warriors().await;
+    let warrior_count = Json(storage.count_warriors().await);
+
+    warrior_count
 }
 
 #[tokio::main]

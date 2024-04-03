@@ -41,6 +41,7 @@ impl Storage {
     }
 
     pub async fn count_warriors(&self) -> usize {
+        println!("warriors length: {:?}", self.warriors.lock().unwrap().len());
         self.warriors.lock().unwrap().len()
     }
 
