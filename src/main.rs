@@ -1,40 +1,45 @@
-use axum::{routing::get, routing::post, Router};
+use axum::{
+    Extension,
+    extract::Json,
+    routing::get,
+    routing::post,
+    Router,
+    response::IntoResponse
+};
+mod storage;
 
-#[derive(Debug)]
-struct Warrior {
-    _id: String,
-    _name: String,
-    _dob: String,
-    _fight_skills: Vec<String>,
-}
+use storage::{Storage, Warrior};
 
-async fn create_warrior() -> &'static str {
+async fn create_warrior(storage: Extension<Storage>, Json(payload): Json<Warrior>) -> &'static str {
     // Implement logic for creating a warrior
-    "Warrior created"
+    println!("Warrior created");
+    storage.create_warrior(payload).await
 }
 
-async fn get_warrior() -> &'static str {
-    // Implement logic for getting a warrior
-    "Warrior retrieved"
+async fn get_warrior(storage: Extension<Storage>) -> impl IntoResponse {
+    println!("Warrior fetched");
+    Json(storage.get_warrior("1".to_string()).await)
 }
 
-async fn search_warriors() -> &'static str {
+async fn search_warriors(storage: Extension<Storage>) -> &'static str {
     // Implement logic for searching warriors
     "Warriors searched"
 }
 
-async fn count_warriors() -> &'static str {
+async fn count_warriors(storage: Extension<Storage>) -> &'static str {
     // Implement logic for counting warriors
     "Warriors counted"
 }
 
 #[tokio::main]
 async fn main() {
+    let storage = storage::Storage::new();
     let app = Router::new()
-        .route("/warrior", post(create_warrior))
+        .route("/warrior", post(create_warrior) )
         .route("/warrior/:id", get(get_warrior))
         .route("/warrior", get(search_warriors))
-        .route("/counting-warriors", get(count_warriors));
+        .route("/counting-warriors", get(count_warriors))
+        .layer(Extension(storage));
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     println!("Listening on: {}", listener.local_addr().unwrap());
