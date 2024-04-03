@@ -37,11 +37,11 @@ The APIs will utilize databases such as Postgres, MySQL, or MongoDB, ensuring ro
 
 ### References
 
-- Gatling & Gatling Repo
-- Nginx
-- Docker
-- MongoDB / PostgreSQL / MariaDB / MySQL / DuckDB / Neo4j
-- REST API
+- (Gatling)[https://gatling.io/] & (Gatling Repo)[https://github.com/gatling/gatling]
+- (Nginx)[https://www.nginx.com/]
+- (Docker)[https://www.docker.com/]
+- (MongoDB)[https://www.mongodb.com/] / (PostgreSQL)[https://www.postgresql.org/] / (MariaDB)[https://mariadb.org/] / (MySQL)[https://www.mysql.com/] / (DuckDB)[https://duckdb.org/] / (Neo4j)[https://neo4j.com/]
+- (REST API)[https://blog.postman.com/rest-api-examples/]
 
 ### Stack and Technologies Used
 
