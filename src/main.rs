@@ -11,24 +11,28 @@ mod storage;
 use storage::{Storage, Warrior};
 
 async fn create_warrior(storage: Extension<Storage>, Json(payload): Json<Warrior>) -> &'static str {
-    // Implement logic for creating a warrior
     println!("Warrior created");
+    // TODO - Error handling
     storage.create_warrior(payload).await
 }
 
 async fn get_warrior(storage: Extension<Storage>) -> impl IntoResponse {
     println!("Warrior fetched");
+    // TODO - Error handling
     Json(storage.get_warrior("1".to_string()).await)
 }
 
-async fn search_warriors(storage: Extension<Storage>) -> &'static str {
-    // Implement logic for searching warriors
-    "Warriors searched"
+async fn search_warriors(storage: Extension<Storage>) -> impl IntoResponse {
+    println!("Warriors searched");
+    // TODO - Error handling
+    // TODO - Implement search logic
+    storage.search_warriors("".to_string()).await;
 }
 
-async fn count_warriors(storage: Extension<Storage>) -> &'static str {
-    // Implement logic for counting warriors
-    "Warriors counted"
+async fn count_warriors(storage: Extension<Storage>) -> impl IntoResponse {
+    println!("Warriors counted");
+    // TODO - Error handling
+    storage.count_warriors().await;
 }
 
 #[tokio::main]
