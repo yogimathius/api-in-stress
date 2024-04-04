@@ -4,7 +4,8 @@ use axum::{
     routing::get,
     routing::post,
     Router,
-    response::IntoResponse
+    response::IntoResponse,
+    http::StatusCode,
 };
 use std::collections::HashMap;
 
@@ -15,21 +16,21 @@ use storage::{Storage, Warrior};
 async fn create_warrior(storage: Extension<Storage>, Json(payload): Json<Warrior>) -> impl IntoResponse {
     println!("Creating warrior: {:?}", payload);
     // TODO - Error handling
-    Json(storage.create_warrior(payload).await)
+    (StatusCode::OK, [("x-foo", "bar")], Json(storage.create_warrior(payload).await))
 }
 
 async fn get_warrior(Path(user_id): Path<u32>, storage: Extension<Storage>) -> impl IntoResponse {
     println!("Warrior fetched for id: {:?}", user_id);
 
     // TODO - Error handling
-    Json(storage.get_warrior(user_id.to_string()).await)
+    (StatusCode::OK, [("x-foo", "bar")], Json(storage.get_warrior(user_id.to_string()).await))
 }
 
 async fn search_warriors(Query(params): Query<HashMap<String, String>>, storage: Extension<Storage>) -> impl IntoResponse {
     println!("Warriors searched for: {:?}", params.get("term").unwrap_or(&"".to_string()));
     // TODO - Error handling
     // TODO - Implement search logic
-    Json(storage.search_warriors("".to_string()).await)
+    (StatusCode::OK, [("x-foo", "bar")], Json(storage.search_warriors("".to_string()).await))
 }
 
 async fn count_warriors(storage: Extension<Storage>) -> impl IntoResponse {
@@ -37,7 +38,7 @@ async fn count_warriors(storage: Extension<Storage>) -> impl IntoResponse {
     // TODO - Error handling
     let warrior_count = Json(storage.count_warriors().await);
 
-    warrior_count
+    (StatusCode::OK, [("x-foo", "bar")], warrior_count)
 }
 
 #[tokio::main]
