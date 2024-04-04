@@ -1,11 +1,13 @@
 use axum::{
     Extension,
-    extract::Json,
+    extract::{Json, Query, Path},
     routing::get,
     routing::post,
     Router,
     response::IntoResponse
 };
+use std::collections::HashMap;
+
 mod storage;
 
 use storage::{Storage, Warrior};
@@ -16,14 +18,16 @@ async fn create_warrior(storage: Extension<Storage>, Json(payload): Json<Warrior
     storage.create_warrior(payload).await
 }
 
-async fn get_warrior(storage: Extension<Storage>) -> impl IntoResponse {
-    println!("Warrior fetched");
+async fn get_warrior(Path(user_id): Path<u32>, storage: Extension<Storage>) -> impl IntoResponse {
+    println!("params: {:?}", user_id);
+    println!("Warrior fetched for: {:?}", user_id);
+
     // TODO - Error handling
-    Json(storage.get_warrior("1".to_string()).await)
+    Json(storage.get_warrior(user_id.to_string()).await)
 }
 
-async fn search_warriors(storage: Extension<Storage>) -> impl IntoResponse {
-    println!("Warriors searched");
+async fn search_warriors(Query(params): Query<HashMap<String, String>>, storage: Extension<Storage>) -> impl IntoResponse {
+    println!("Warriors searched for: {:?}", params.get("term").unwrap_or(&"".to_string()));
     // TODO - Error handling
     // TODO - Implement search logic
     storage.search_warriors("".to_string()).await;
