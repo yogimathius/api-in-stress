@@ -22,9 +22,10 @@ impl Storage {
         }
     }
 
-    pub async fn create_warrior(&self, warrior: Warrior) -> &'static str {
-        self.warriors.lock().unwrap().push(warrior);
-        "Warrior created"
+    pub async fn create_warrior(&self, warrior: Warrior) -> Option<Warrior> {
+        self.warriors.lock().unwrap().push(warrior.clone());
+
+        Some(warrior)
     }
 
     pub async fn get_warrior(&self, id: String) -> Option<Warrior> {

@@ -12,15 +12,14 @@ mod storage;
 
 use storage::{Storage, Warrior};
 
-async fn create_warrior(storage: Extension<Storage>, Json(payload): Json<Warrior>) -> &'static str {
-    println!("Warrior created");
+async fn create_warrior(storage: Extension<Storage>, Json(payload): Json<Warrior>) -> impl IntoResponse {
+    println!("Creating warrior: {:?}", payload);
     // TODO - Error handling
-    storage.create_warrior(payload).await
+    Json(storage.create_warrior(payload).await)
 }
 
 async fn get_warrior(Path(user_id): Path<u32>, storage: Extension<Storage>) -> impl IntoResponse {
-    println!("params: {:?}", user_id);
-    println!("Warrior fetched for: {:?}", user_id);
+    println!("Warrior fetched for id: {:?}", user_id);
 
     // TODO - Error handling
     Json(storage.get_warrior(user_id.to_string()).await)
@@ -30,7 +29,7 @@ async fn search_warriors(Query(params): Query<HashMap<String, String>>, storage:
     println!("Warriors searched for: {:?}", params.get("term").unwrap_or(&"".to_string()));
     // TODO - Error handling
     // TODO - Implement search logic
-    storage.search_warriors("".to_string()).await;
+    Json(storage.search_warriors("".to_string()).await)
 }
 
 async fn count_warriors(storage: Extension<Storage>) -> impl IntoResponse {
