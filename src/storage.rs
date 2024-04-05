@@ -38,8 +38,13 @@ impl Storage {
     }
 
     pub async fn search_warriors(&self, _term: String) -> Vec<Warrior> {
-        self.warriors.lock().unwrap().clone()
+        let warriors = self.warriors.lock().unwrap();
+        let num_warriors = std::cmp::min(warriors.len(), 50);
+        println!("num_warriors: {:?}", num_warriors);
+        println!("first 50 warriors: {:?}", warriors[0..num_warriors].to_vec());
+        warriors[0..num_warriors].to_vec()
     }
+    
 
     pub async fn count_warriors(&self) -> usize {
         println!("warriors length: {:?}", self.warriors.lock().unwrap().len());
@@ -49,7 +54,7 @@ impl Storage {
     pub async fn initialize_data(&self) {
         let mut warriors = Vec::new();
 
-        for i in 1..=25 {
+        for i in 1..=75 {
             let warrior = Warrior {
                 id: i.to_string(),
                 name: format!("Warrior {}", i),
