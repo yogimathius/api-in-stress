@@ -4,10 +4,15 @@ use axum::{
     routing::get,
     routing::post,
     Router,
+    BoxError,
     response::IntoResponse,
     http::StatusCode,
+    error_handling::HandleErrorLayer,
 };
+use tower::ServiceBuilder;
+
 use std::collections::HashMap;
+use std::time::Duration;
 
 mod storage;
 
@@ -41,6 +46,21 @@ async fn count_warriors(storage: Extension<Storage>) -> impl IntoResponse {
     (StatusCode::OK, [("x-foo", "bar")], warrior_count)
 }
 
+async fn handle_timeout_error(err: BoxError) -> (StatusCode, String) {
+    println!("Error: {:?}", err);
+    if err.is::<tower::timeout::error::Elapsed>() {
+        (
+            StatusCode::REQUEST_TIMEOUT,
+            "Request took too long".to_string(),
+        )
+    } else {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            format!("Unhandled internal error: {err}"),
+        )
+    }
+}
+
 #[tokio::main]
 async fn main() {
     let storage = storage::Storage::new();
@@ -51,7 +71,14 @@ async fn main() {
         .route("/warrior/:id", get(get_warrior))
         .route("/warrior", get(search_warriors))
         .route("/counting-warriors", get(count_warriors))
-        .layer(Extension(storage));
+        .layer(Extension(storage))
+        .layer(
+            ServiceBuilder::new()
+                // `timeout` will produce an error if the handler takes
+                // too long so we must handle those
+                .layer(HandleErrorLayer::new(handle_timeout_error))
+                .timeout(Duration::from_secs(30))
+        );
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     println!("Listening on: {}", listener.local_addr().unwrap());
