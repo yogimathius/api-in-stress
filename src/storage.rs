@@ -40,8 +40,6 @@ impl Storage {
     pub async fn search_warriors(&self, _term: String) -> Vec<Warrior> {
         let warriors = self.warriors.lock().unwrap();
         let num_warriors = std::cmp::min(warriors.len(), 50);
-        println!("num_warriors: {:?}", num_warriors);
-        println!("first 50 warriors: {:?}", warriors[0..num_warriors].to_vec());
         warriors[0..num_warriors].to_vec()
     }
     

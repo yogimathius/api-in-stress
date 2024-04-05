@@ -1,15 +1,7 @@
 use axum::{
-    Extension,
-    extract::{Json, Query, Path},
-    routing::get,
-    routing::post,
-    Router,
-    BoxError,
-    response::IntoResponse,
-    http::StatusCode,
-    error_handling::HandleErrorLayer,
+    error_handling::HandleErrorLayer, extract::{Json, Path, Query}, http::StatusCode, response::IntoResponse, routing::{get, post}, BoxError, Extension, Router
 };
-use tower::ServiceBuilder;
+use tower::{timeout::TimeoutLayer, ServiceBuilder};
 
 use std::collections::HashMap;
 use std::time::Duration;
@@ -77,7 +69,7 @@ async fn main() {
                 // `timeout` will produce an error if the handler takes
                 // too long so we must handle those
                 .layer(HandleErrorLayer::new(handle_timeout_error))
-                .timeout(Duration::from_secs(30))
+                .layer(TimeoutLayer::new(Duration::from_secs(30)))
         );
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
