@@ -1,9 +1,14 @@
-use std::collections::HashMap;
 
 use axum::{extract::{Path, Query}, http::StatusCode, response::IntoResponse, Extension, Json};
+use diesel_async::{
+    pooled_connection::AsyncDieselConnectionManager, AsyncPgConnection, RunQueryDsl,
+};
+use std::collections::HashMap;
 use tower::BoxError;
 
 use crate::storage::{Storage, Warrior};
+
+type Pool = bb8::Pool<AsyncDieselConnectionManager<AsyncPgConnection>>;
 
 pub async fn create_warrior(storage: Extension<Storage>, Json(payload): Json<Warrior>) -> impl IntoResponse {
     println!("Creating warrior: {:?}", payload);
