@@ -4,6 +4,9 @@ use axum::{
     Extension,
     Router
 };
+use diesel_async::{
+    pooled_connection::AsyncDieselConnectionManager, AsyncPgConnection, RunQueryDsl,
+};
 use tower::{timeout::TimeoutLayer, ServiceBuilder};
 
 use std::time::Duration;
@@ -27,12 +30,18 @@ async fn main() {
 
     let storage = storage::Storage::new();
     storage.initialize_data().await;
+    let db_url = std::env::var("DATABASE_URL").unwrap();
+
+        // set up connection pool
+    let config = AsyncDieselConnectionManager::<diesel_async::AsyncPgConnection>::new(db_url);
+    let pool = bb8::Pool::builder().build(config).await.unwrap();
 
     let app = Router::new()
         .route("/warrior", post(create_warrior) )
         .route("/warrior/:id", get(get_warrior))
         .route("/warrior", get(search_warriors))
         .route("/counting-warriors", get(count_warriors))
+        .with_state(pool)
         .layer(Extension(storage))
         .layer(
             ServiceBuilder::new()
