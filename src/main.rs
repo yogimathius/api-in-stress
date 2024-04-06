@@ -7,6 +7,7 @@ use axum::{
 use tower::{timeout::TimeoutLayer, ServiceBuilder};
 
 use std::time::Duration;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod storage;
 mod handlers;
@@ -14,6 +15,14 @@ use handlers::{create_warrior, get_warrior, search_warriors, count_warriors, han
 
 #[tokio::main]
 async fn main() {
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "example_diesel_async_postgres=debug".into()),
+        )
+        .with(tracing_subscriber::fmt::layer())
+        .init();
+
     let storage = storage::Storage::new();
     storage.initialize_data().await;
 
