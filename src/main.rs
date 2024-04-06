@@ -4,9 +4,7 @@ use axum::{
     Extension,
     Router
 };
-use diesel_async::{
-    pooled_connection::AsyncDieselConnectionManager, AsyncPgConnection, RunQueryDsl,
-};
+use diesel_async::pooled_connection::AsyncDieselConnectionManager;
 use tower::{timeout::TimeoutLayer, ServiceBuilder};
 
 use std::time::Duration;
@@ -15,8 +13,6 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 mod storage;
 mod handlers;
 use handlers::{create_warrior, get_warrior, search_warriors, count_warriors, handle_timeout_error};
-
-type Pool = bb8::Pool<AsyncDieselConnectionManager<AsyncPgConnection>>;
 
 #[tokio::main]
 async fn main() {
