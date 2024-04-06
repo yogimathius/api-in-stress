@@ -13,6 +13,8 @@ mod storage;
 mod handlers;
 use handlers::{create_warrior, get_warrior, search_warriors, count_warriors, handle_timeout_error};
 
+type Pool = bb8::Pool<AsyncDieselConnectionManager<AsyncPgConnection>>;
+
 #[tokio::main]
 async fn main() {
     tracing_subscriber::registry()
