@@ -1,6 +1,19 @@
 version: "3"
 
 services:
+  setup-db:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command:
+      /bin/sh -c "cargo install diesel_cli --no-default-features --features sqlite && \
+      diesel setup && \
+      diesel migration run"
+    volumes:
+      - .:/app
+    environment:
+      DATABASE_URL: postgres://docker:docker@postgresCont/diesel_demo
+
   api-gateway:
     build: .
     deploy:
@@ -9,10 +22,33 @@ services:
         limits:
           cpus: "0.75"
           memory: "1536M"
+    environment:
+      DATABASE_URL: postgres://docker:docker@postgresCont/diesel_demo
     ports:
       - "3000"
     expose:
       - "3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:14.1-alpine
+    restart: always
+    user: postgres
+    environment:
+      - POSTGRES_DB=diesel_demo
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    expose:
+      - 5432
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - db:/var/lib/postgresql/data
 
   nginx:
     image: nginx:latest
@@ -22,3 +58,7 @@ services:
       - api-gateway
     ports:
       - "4000:4000"
+
+volumes:
+  db:
+    driver: local

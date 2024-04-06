@@ -66,5 +66,18 @@ USER appuser
 # Copy the executable from the "build" stage.
 COPY --from=build /bin/server /bin/
 
+# Install Diesel CLI
+# FROM rust
+
+# RUN apt update
+# RUN apt install -y libpq-dev
+
+# RUN cargo install diesel_cli --no-default-features --features postgres
+
+# RUN diesel setup    
+
+# # Run Diesel migrations
+# RUN diesel migration run
+
 # What the container should run when it is started.
 CMD ["/bin/server"]
