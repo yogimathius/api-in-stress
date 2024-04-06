@@ -4,7 +4,7 @@ use diesel_async::{
     AsyncPgConnection,
     RunQueryDsl,
 };
-use crate::handlers::internal_error;
+use crate::database::internal_error;
 use crate::schema::warriors::{self, dob, name};
 use crate::models::Warrior;
 
