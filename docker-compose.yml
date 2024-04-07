@@ -1,19 +1,6 @@
 version: "3"
 
 services:
-  setup-db:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command:
-      /bin/sh -c "cargo install diesel_cli --no-default-features --features sqlite && \
-      diesel setup && \
-      diesel migration run"
-    volumes:
-      - .:/app
-    environment:
-      DATABASE_URL: postgres://docker:docker@postgresCont/diesel_demo
-
   api-gateway:
     build: .
     deploy:
@@ -22,43 +9,67 @@ services:
         limits:
           cpus: "0.75"
           memory: "1536M"
+    volumes:
+      - ./api_server:/usr/src/app
     environment:
-      DATABASE_URL: postgres://docker:docker@postgresCont/diesel_demo
+      DATABASE_URL: postgres://postgres:pass123@postgres:5432/diesel_demo
     ports:
       - "3000"
-    expose:
-      - "3000"
+    networks:
+      - mynetwork
     depends_on:
-      db:
+      postgres:
         condition: service_healthy
 
-  db:
-    image: postgres:14.1-alpine
-    restart: always
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    ports:
+      - "6500:5432"
     user: postgres
     environment:
-      - POSTGRES_DB=diesel_demo
+      - PG_DB=diesel_demo
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    expose:
-      - 5432
+      - POSTGRES_PASSWORD=pass123
+      - PGUSER=postgres
+      - PG_PASSWORD=pass123
+      - PGDATA=/var/lib/postgresql/data/pgdata
     healthcheck:
-      test: ["CMD", "pg_isready"]
+      test: ["CMD", "pg_isready", "-h", "localhost", "-p", "5432"]
       interval: 10s
       timeout: 5s
       retries: 5
-    volumes:
-      - db:/var/lib/postgresql/data
+    env_file:
+      - ./.env
+    networks:
+      - mynetwork
+    command: postgres -c listen_addresses='*'
+
+  pgAdmin:
+    image: dpage/pgadmin4
+    container_name: pgAdmin
+    env_file:
+      - ./.env
+    ports:
+      - "5050:80"
+    networks:
+      - mynetwork
 
   nginx:
     image: nginx:latest
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - api-gateway
     ports:
       - "4000:4000"
+    networks:
+      - mynetwork
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+networks:
+  mynetwork:
 
 volumes:
-  db:
-    driver: local
+  progresDB:
+  pgdata: {}
