@@ -1,6 +1,6 @@
+use sqlx::postgres::PgPoolOptions;
 mod database;
 mod models;
-mod schema;
 mod seeds;
 
 use axum::{
@@ -8,7 +8,6 @@ use axum::{
     routing::{get, post},
     Router
 };
-use diesel_async::pooled_connection::AsyncDieselConnectionManager;
 use tower::{timeout::TimeoutLayer, ServiceBuilder};
 
 use std::time::Duration;
@@ -29,15 +28,26 @@ async fn main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    dotenv().expect(".env file not found");
+    dotenv().ok();
 
     println!("DATABASE_URL: {:?}", std::env::var("DATABASE_URL"));
-    let db_url = std::env::var("DATABASE_URL").unwrap();
+    // let db_url = std::env::var("DATABASE_URL").unwrap();
+    // let mut conn = PgConnection::establish(&db_url).unwrap();
+    let db_connection_str = std::env::var("DATABASE_URL")
+        .unwrap_or_else(|_| "postgres://postgres:password@localhost".to_string());
 
-    let config = AsyncDieselConnectionManager::<diesel_async::AsyncPgConnection>::new(db_url);
-    let pool = bb8::Pool::builder().build(config).await.unwrap();
+    // set up connection pool
+    let pool = PgPoolOptions::new()
+        .max_connections(5)
+        .acquire_timeout(Duration::from_secs(3))
+        .connect(&db_connection_str)
+        .await
+        .expect("can't connect to database");
 
     seeds::run_seeds(pool.clone()).await;
+
+    println!("Running seeds");
+    // seeds::run_seeds(pool.clone()).await;
 
     let app = Router::new()
         .route("/warrior", post(create_warrior) )
