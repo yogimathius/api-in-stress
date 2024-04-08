@@ -1,0 +1,30 @@
+version: "3"
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    ports:
+      - "6500:5432"
+    user: postgres
+    environment:
+      - PG_DB=diesel_demo
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=pass123
+      - PGUSER=postgres
+      - PG_PASSWORD=pass123
+      - PGDATA=/var/lib/postgresql/data/some_name/
+
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "localhost", "-p", "5432"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    env_file:
+      - ./.env
+    networks:
+      - mynetwork
+    command: postgres -c listen_addresses='*'
+
+networks:
+  mynetwork:
