@@ -8,11 +8,21 @@ edition = "2021"
 [dependencies]
 axum = "0.7.5"
 bb8 = "0.8"
-diesel = "2"
-diesel-async = { version = "0.3", features = ["postgres", "bb8"] }
+bb8-postgres = "0.7.0"
 dotenvy = "0.15"
 serde = { version = "1.0", features = ["derive"] }
+sqlx = { version = "0.6", features = [ "runtime-tokio-rustls", "postgres", "macros" ] }
 tokio = { version = "1.37.0", features = ["full"] }
+tokio-postgres = "0.7.2"
 tower = { version = "0.4", features = ["full"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+# Needed for Postgres.
+openssl = "*"
+[dependencies.uuid]
+version = "1.8.0"
+features = [
+    "v4",                # Lets you generate random UUIDs
+    "fast-rng",          # Use a faster (but still sufficiently random) RNG
+    "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
+]
