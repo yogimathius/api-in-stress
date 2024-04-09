@@ -48,7 +48,7 @@ async fn main() {
     let _ = sqlx::migrate!("./migrations")
         .run(&pool)
         .await;
-    seeds::run_seeds(pool.clone()).await;
+    // seeds::run_seeds(pool.clone()).await;
 
     println!("Running seeds");
     // seeds::run_seeds(pool.clone()).await;
