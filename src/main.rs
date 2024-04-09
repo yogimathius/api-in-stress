@@ -43,7 +43,11 @@ async fn main() {
         .connect(&db_connection_str)
         .await
         .expect("can't connect to database");
+    println!("cargo:rerun-if-changed=migrations");
 
+    let _ = sqlx::migrate!("./migrations")
+        .run(&pool)
+        .await;
     seeds::run_seeds(pool.clone()).await;
 
     println!("Running seeds");
