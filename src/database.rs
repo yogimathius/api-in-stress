@@ -12,18 +12,18 @@ use tower::BoxError;
 
 pub async fn create_warrior(
     DatabaseConnection(mut conn): DatabaseConnection,
-    Json(new_warrior): Json<NewWarrior>
+    Json(warrior): Json<NewWarrior>
 ) ->  Result<Json<Warrior>, (StatusCode, String)>{
-    println!("Creating warrior: {:?}", new_warrior);
+    println!("Creating warrior: {:?}", warrior);
 
     let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(
-        "INSERT INTO warriors (name, dob) VALUES ("
+        r#"INSERT INTO warriors (name, dob) VALUES ('"#
     );
 
-    query_builder.push(new_warrior.name);
-    query_builder.push(", ");
-    query_builder.push(new_warrior.dob);
-    query_builder.push(") RETURNING id, name, dob");
+    query_builder.push(warrior.name);
+    query_builder.push(r#"', '"#);
+    query_builder.push(warrior.dob);
+    query_builder.push(r#"') RETURNING id, name, dob;"#);
     // TODO - Error handling
 
     let row = sqlx::query(query_builder.build().sql())
@@ -68,7 +68,7 @@ pub async fn get_warrior(
     let query = format!(
         r#"SELECT id, name, dob
         FROM warriors
-        WHERE id = {}"#,
+        WHERE id = {};"#,
         user_id
     );
 
@@ -92,7 +92,7 @@ pub async fn search_warriors(
 ) -> Result<Json<Vec<Warrior>>, (StatusCode, String)> {
     println!("Searching warriors with params: {:?}", params);
     
-    let query = "SELECT id, name, dob FROM warriors";
+    let query = "SELECT id, name, dob FROM warriors;";
 
     let rows = sqlx::query(query)
         .fetch_all(&mut conn)
@@ -115,7 +115,7 @@ pub async fn count_warriors(DatabaseConnection(mut conn): DatabaseConnection,) -
     println!("Warriors counted");
     // TODO - Error handling
 
-    let query = "SELECT COUNT(*) FROM warriors";
+    let query = "SELECT COUNT(*) FROM warriors;";
 
     let row = sqlx::query(query)
         .fetch_one(&mut conn)
