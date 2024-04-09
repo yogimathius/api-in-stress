@@ -1,4 +1,4 @@
-use sqlx::postgres::PgPool;
+use sqlx::{postgres::PgPool, Execute, Postgres, QueryBuilder, Row};
 use axum::{
     async_trait,
     extract::{FromRef, FromRequestParts, Path, Query},
@@ -15,24 +15,26 @@ pub async fn create_warrior(
     Json(new_warrior): Json<NewWarrior>
 ) ->  Result<Json<Warrior>, (StatusCode, String)>{
     println!("Creating warrior: {:?}", new_warrior);
+
+    let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(
+        "INSERT INTO warriors (name, dob) VALUES ("
+    );
+
+    query_builder.push(new_warrior.name);
+    query_builder.push(", ");
+    query_builder.push(new_warrior.dob);
+    query_builder.push(") RETURNING id, name, dob");
     // TODO - Error handling
-    let warrior = sqlx::query!(
-        r#"
-        INSERT INTO warriors (name, dob)
-        VALUES ($1, $2)
-        RETURNING id, name, dob
-        "#,
-        new_warrior.name,
-        new_warrior.dob
-    )
+
+    let row = sqlx::query(query_builder.build().sql())
     .fetch_one(&mut conn)
     .await
     .map_err(|err| internal_error(err))?;
 
     let warrior = Warrior {
-        id: warrior.id.to_string(),
-        name: warrior.name,
-        dob: warrior.dob,
+        id: row.get::<String, _>("id"),
+        name: row.get::<String, _>("name"),
+        dob: row.get::<String, _>("dob"),
     };
 
     Ok(Json(warrior))
@@ -63,22 +65,22 @@ pub async fn get_warrior(
 ) -> Result<Json<Warrior>, (StatusCode, String)> {
     println!("Warrior fetched for id: {:?}", user_id);
 
-    let warrior = sqlx::query!(
-        r#"
-        SELECT id, name, dob
+    let query = format!(
+        r#"SELECT id, name, dob
         FROM warriors
-        WHERE id = $1
-        "#,
+        WHERE id = {}"#,
         user_id
-    )
-    .fetch_one(&mut conn)
-    .await
-    .map_err(|err| internal_error(err))?;
+    );
+
+    let row = sqlx::query(&query)
+        .fetch_one(&mut conn)
+        .await
+        .map_err(|err| internal_error(err))?;
 
     let warrior = Warrior {
-        id: warrior.id.to_string(),
-        name: warrior.name,
-        dob: warrior.dob,
+        id: row.get::<String, _>("id"),
+        name: row.get::<String, _>("name"),
+        dob: row.get::<String, _>("dob"),
     };
 
     Ok(Json(warrior))
@@ -90,22 +92,19 @@ pub async fn search_warriors(
 ) -> Result<Json<Vec<Warrior>>, (StatusCode, String)> {
     println!("Searching warriors with params: {:?}", params);
     
-    let query = sqlx::query!(
-        r#"
-        SELECT id, name, dob
-        FROM warriors
-        "#,
-    );
+    let query = "SELECT id, name, dob FROM warriors";
 
+    let rows = sqlx::query(query)
+        .fetch_all(&mut conn)
+        .await
+        .map_err(|err| internal_error(err))?;
 
-    let warriors = query.fetch_all(&mut conn).await.map_err(|err| internal_error(err))?;
-
-    let warriors = warriors
+    let warriors = rows
         .into_iter()
-        .map(|warrior| Warrior {
-            id: warrior.id.to_string(),
-            name: warrior.name,
-            dob: warrior.dob,
+        .map(|row| Warrior {
+            id: row.get::<String, _>("id"),
+            name: row.get::<String, _>("name"),
+            dob: row.get::<String, _>("dob"),
         })
         .collect();
 
@@ -116,18 +115,14 @@ pub async fn count_warriors(DatabaseConnection(mut conn): DatabaseConnection,) -
     println!("Warriors counted");
     // TODO - Error handling
 
+    let query = "SELECT COUNT(*) FROM warriors";
 
-    let count = sqlx::query!(
-        r#"
-        SELECT COUNT(*)
-        FROM warriors
-        "#,
-    )
-    .fetch_one(&mut conn)
-    .await
-    .map_err(|err| internal_error(err))?;
+    let row = sqlx::query(query)
+        .fetch_one(&mut conn)
+        .await
+        .map_err(|err| internal_error(err))?;
 
-    Ok(Json(count.count.unwrap()))
+    Ok(Json(row.get::<i64, _>(0)))
     
 }
 
