@@ -28,8 +28,8 @@ services:
     command: postgres -c listen_addresses='*'
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
-      # copy the sql script to create tables
       - ./sql/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+      - ./sql/fill_tables.sql:/docker-entrypoint-initdb.d/fill_tables.sql
 
 networks:
   mynetwork:
