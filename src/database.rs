@@ -32,7 +32,7 @@ pub async fn create_warrior(
     .map_err(|err| internal_error(err))?;
 
     let warrior = Warrior {
-        id: row.get::<String, _>("id"),
+        id: row.get::<i32, _>("id").to_string(),
         name: row.get::<String, _>("name"),
         dob: row.get::<String, _>("dob"),
     };
@@ -78,7 +78,7 @@ pub async fn get_warrior(
         .map_err(|err| internal_error(err))?;
 
     let warrior = Warrior {
-        id: row.get::<String, _>("id"),
+        id: row.get::<i32, _>("id").to_string(),
         name: row.get::<String, _>("name"),
         dob: row.get::<String, _>("dob"),
     };
@@ -102,7 +102,7 @@ pub async fn search_warriors(
     let warriors = rows
         .into_iter()
         .map(|row| Warrior {
-            id: row.get::<String, _>("id"),
+            id: row.get::<i32, _>("id").to_string(),
             name: row.get::<String, _>("name"),
             dob: row.get::<String, _>("dob"),
         })
