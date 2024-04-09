@@ -17,10 +17,9 @@ ARG APP_NAME
 WORKDIR /app
 
 # Install host build dependencies.
-RUN apk add --no-cache clang lld musl-dev git
+RUN apk add --no-cache clang lld musl-dev git openssl-dev
 
-# Install cargo-watch
-RUN cargo install cargo-watch
+
 # Build the application.
 # Leverage a cache mount to /usr/local/cargo/registry/
 # for downloaded dependencies, a cache mount to /usr/local/cargo/git/db
@@ -32,6 +31,7 @@ RUN cargo install cargo-watch
 RUN --mount=type=bind,source=src,target=src \
     --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
     --mount=type=bind,source=Cargo.lock,target=Cargo.lock \
+    --mount=type=bind,source=migrations,target=migrations \
     --mount=type=cache,target=/app/target/ \
     --mount=type=cache,target=/usr/local/cargo/git/db \
     --mount=type=cache,target=/usr/local/cargo/registry/ \
@@ -62,6 +62,7 @@ RUN adduser \
     --uid "${UID}" \
     appuser
 USER appuser
+ENV SET DATABASE_URL=postgres://postgres:password@localhost:5432/diesel_demo
 
 # Copy the executable from the "build" stage.
 COPY --from=build /bin/server /bin/
@@ -78,6 +79,5 @@ COPY --from=build /bin/server /bin/
 
 # # Run Diesel migrations
 # RUN diesel migration run
-
 # What the container should run when it is started.
 CMD ["/bin/server"]
