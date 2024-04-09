@@ -15,6 +15,7 @@ services:
       - "3000"
     networks:
       - mynetwork
+    command: sh -c "cargo watch -x run"
 
   nginx:
     image: nginx:latest
