@@ -1,4 +1,4 @@
-use sqlx::Postgres;
+use sqlx::{Execute, Postgres, QueryBuilder};
 
 use crate::models::NewWarrior;
 
@@ -21,14 +21,17 @@ pub async fn run_seeds(
     let mut conn = pool.acquire().await.expect("Error acquiring connection from pool");
     for warrior in initial_warriors {
         println!("Inserting warrior: {:?}", warrior);
-        sqlx::query!(
-            r#"
-            INSERT INTO warriors (name, dob)
-            VALUES ($1, $2)
-            "#,
-            warrior.0,
-            warrior.1
-        )
+        let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(
+            "INSERT INTO warriors (name, dob) VALUES ("
+        );
+
+        query_builder.push(warrior.0);
+        query_builder.push(", ");
+        query_builder.push(warrior.1);
+        query_builder.push(") RETURNING id, name, dob");
+        
+
+        sqlx::query(query_builder.build().sql())
         .fetch_one(&mut conn)
         .await
         .expect("Error inserting seed data into database");
