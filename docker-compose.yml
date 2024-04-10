@@ -24,6 +24,8 @@ services:
       - "4000:4000"
     networks:
       - mynetwork
+    depends_on:
+      - api-gateway
 
 networks:
   mynetwork:
