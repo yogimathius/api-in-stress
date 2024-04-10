@@ -92,7 +92,7 @@ pub async fn search_warriors(
 ) -> Result<Json<Vec<Warrior>>, (StatusCode, String)> {
     println!("Searching warriors with params: {:?}", params);
     
-    let query = "SELECT id, name, dob FROM warriors;";
+    let query = "SELECT id, name, dob FROM warriors LIMIT 50;";
 
     let rows = sqlx::query(query)
         .fetch_all(&mut conn)
