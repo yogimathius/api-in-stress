@@ -25,7 +25,7 @@ services:
       - ./.env
     networks:
       - mynetwork
-    command: postgres -c listen_addresses='*'
+    command: postgres -c listen_addresses='*' -c 'max_connections=6000'
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
       - ./sql/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
