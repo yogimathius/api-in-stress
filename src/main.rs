@@ -1,7 +1,6 @@
 use sqlx::postgres::PgPoolOptions;
 mod database;
 mod models;
-mod seeds;
 
 use axum::{
     error_handling::HandleErrorLayer,
@@ -38,20 +37,11 @@ async fn main() {
 
     // set up connection pool
     let pool = PgPoolOptions::new()
-        .max_connections(5)
+        .max_connections(4000)
         .acquire_timeout(Duration::from_secs(3))
         .connect(&db_connection_str)
         .await
         .expect("can't connect to database");
-    println!("cargo:rerun-if-changed=migrations");
-
-    let _ = sqlx::migrate!("./migrations")
-        .run(&pool)
-        .await;
-    // seeds::run_seeds(pool.clone()).await;
-
-    println!("Running seeds");
-    // seeds::run_seeds(pool.clone()).await;
 
     let app = Router::new()
         .route("/warrior", post(create_warrior) )
