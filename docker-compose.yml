@@ -17,7 +17,7 @@ services:
       - mynetwork
 
   nginx:
-    image: nginx:latest
+    image: nginx:1-alpine
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
