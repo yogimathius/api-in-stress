@@ -6,10 +6,10 @@ WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'warriors')\gexec
 CREATE EXTENSION postgres_fdw;
 
 CREATE SERVER db_part1 FOREIGN DATA WRAPPER postgres_fdw
-    OPTIONS (host 'db_part1', dbname 'scaling');
+    OPTIONS (host 'db_part1', dbname 'warriors');
 
 CREATE SERVER db_part2 FOREIGN DATA WRAPPER postgres_fdw
-    OPTIONS (host 'db_part2', dbname 'scaling');
+    OPTIONS (host 'db_part2', dbname 'warriors');
 
 CREATE USER MAPPING FOR CURRENT_USER SERVER db_part1
     OPTIONS (user 'postgres', password 'pass123');
