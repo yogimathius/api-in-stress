@@ -97,7 +97,6 @@ INSERT INTO skills (name) VALUES
 ('Negotiation'),
 ('Persuasion');
 
--- Seed data for warrior_skills
 -- Seed data for warrior_skills for multiple warriors
 INSERT INTO warrior_skills (warrior_id, skill_id) VALUES
 -- Aragorn Stormborn
