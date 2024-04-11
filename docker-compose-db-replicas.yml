@@ -1,7 +1,7 @@
 version: "3.7"
 
 services:
-  db_primary: &postgres
+  postgres: &postgres
     image: postgres:latest
     restart: always
     depends_on:
@@ -38,6 +38,8 @@ services:
     volumes:
       - "db_part1:/var/lib/postgresql/data:delegated"
       - "./sql/db_part1.sql:/docker-entrypoint-initdb.d/setup.sql:cached"
+    networks:
+      - mynetwork
 
   db_part2:
     <<: *postgres
@@ -45,6 +47,8 @@ services:
     volumes:
       - "db_part2:/var/lib/postgresql/data:delegated"
       - "./sql/db_part2.sql:/docker-entrypoint-initdb.d/setup.sql:cached"
+    networks:
+      - mynetwork
 
 networks:
   mynetwork:
