@@ -1,3 +1,6 @@
+SELECT 'CREATE DATABASE warriors' 
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'warriors')\gexec
+
 CREATE TABLE IF NOT EXISTS warriors (
   id SERIAL PRIMARY KEY,
   name VARCHAR NOT NULL,
