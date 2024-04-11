@@ -1,9 +1,13 @@
 version: "3.7"
 
 services:
-  main-postgres:
+  db_primary: &postgres
     image: postgres:latest
     restart: always
+    depends_on:
+      - db_part1
+      - db_part2
+    user: postgres
     environment:
       - PG_DB=warriors
       - POSTGRES_DB=warriors
@@ -13,11 +17,10 @@ services:
       - PG_PASSWORD=pass123
       - PGDATA=/var/lib/postgresql/data/some_name/
     ports:
-      - "6500:5432"
+      - 5432
     volumes:
-      - main-data:/var/lib/postgresql/data
-      - ./sql/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
-      - ./sql/fill_tables.sql:/docker-entrypoint-initdb.d/fill_tables.sql
+      - "db_primary:/var/lib/postgresql/data:delegated"
+      - "./sql/db_primary.sql:/docker-entrypoint-initdb.d/setup.sql:cached"
     networks:
       - mynetwork
     command: postgres -c listen_addresses='*' -c 'max_connections=6000'
@@ -29,41 +32,25 @@ services:
       timeout: 5s
       retries: 5
 
-  replica-postgres:
-    image: postgres:latest
-    restart: always
-    environment:
-      PG_DB: warriors
-      POSTGRES_DB: warriors
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: pass123
-      PGUSER: postgres
-      PG_PASSWORD: pass123
-      PGDATA: /var/lib/postgresql/data/some_name/
-      POSTGRES_MASTER_HOST: main-postgres
-      POSTGRES_MASTER_PORT: 5432
-      POSTGRES_MASTER_USER: postgres
-      POSTGRES_MASTER_PASSWORD: pass123
-    depends_on:
-      - main-postgres
+  db_part1:
+    <<: *postgres
+    depends_on: []
     volumes:
-      - replica-data:/var/lib/postgresql/data
-      - ./sql/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
-      - ./sql/fill_tables.sql:/docker-entrypoint-initdb.d/fill_tables.sql
-    networks:
-      - mynetwork
-    command: postgres -c listen_addresses='*' -c 'max_connections=6000'
-    env_file:
-      - ./.env
-    healthcheck:
-      test: ["CMD", "pg_isready", "-h", "localhost", "-p", "5432"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - "db_part1:/var/lib/postgresql/data:delegated"
+      - "./sql/db_part1.sql:/docker-entrypoint-initdb.d/setup.sql:cached"
+
+  db_part2:
+    <<: *postgres
+    depends_on: []
+    volumes:
+      - "db_part2:/var/lib/postgresql/data:delegated"
+      - "./sql/db_part2.sql:/docker-entrypoint-initdb.d/setup.sql:cached"
 
 networks:
   mynetwork:
 
 volumes:
-  main-data:
-  replica-data:
+  db_primary:
+  db_part1:
+  db_part2:
+  db_part3:
