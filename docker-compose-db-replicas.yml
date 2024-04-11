@@ -1,0 +1,69 @@
+version: "3.7"
+
+services:
+  main-postgres:
+    image: postgres:latest
+    restart: always
+    environment:
+      - PG_DB=warriors
+      - POSTGRES_DB=warriors
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=pass123
+      - PGUSER=postgres
+      - PG_PASSWORD=pass123
+      - PGDATA=/var/lib/postgresql/data/some_name/
+    ports:
+      - "6500:5432"
+    volumes:
+      - main-data:/var/lib/postgresql/data
+      - ./sql/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+      - ./sql/fill_tables.sql:/docker-entrypoint-initdb.d/fill_tables.sql
+    networks:
+      - mynetwork
+    command: postgres -c listen_addresses='*' -c 'max_connections=6000'
+    env_file:
+      - ./.env
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "localhost", "-p", "5432"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  replica-postgres:
+    image: postgres:latest
+    restart: always
+    environment:
+      PG_DB: warriors
+      POSTGRES_DB: warriors
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pass123
+      PGUSER: postgres
+      PG_PASSWORD: pass123
+      PGDATA: /var/lib/postgresql/data/some_name/
+      POSTGRES_MASTER_HOST: main-postgres
+      POSTGRES_MASTER_PORT: 5432
+      POSTGRES_MASTER_USER: postgres
+      POSTGRES_MASTER_PASSWORD: pass123
+    depends_on:
+      - main-postgres
+    volumes:
+      - replica-data:/var/lib/postgresql/data
+      - ./sql/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+      - ./sql/fill_tables.sql:/docker-entrypoint-initdb.d/fill_tables.sql
+    networks:
+      - mynetwork
+    command: postgres -c listen_addresses='*' -c 'max_connections=6000'
+    env_file:
+      - ./.env
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "localhost", "-p", "5432"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  mynetwork:
+
+volumes:
+  main-data:
+  replica-data:
