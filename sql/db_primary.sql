@@ -17,51 +17,51 @@ CREATE USER MAPPING FOR CURRENT_USER SERVER db_part1
 CREATE USER MAPPING FOR CURRENT_USER SERVER db_part2
     OPTIONS (user 'postgres', password 'pass123');
   
-CREATE FOREIGN TABLE warriors_part1 (
+CREATE FOREIGN TABLE warriors_1 (
   id INT,
   name VARCHAR,
   dob VARCHAR
 ) SERVER db_part1;
 
-CREATE FOREIGN TABLE skills_part1 (
+CREATE FOREIGN TABLE skills_1 (
   id INT,
   name VARCHAR
 ) SERVER db_part1;
 
-CREATE FOREIGN TABLE warrior_skills_part1 (
+CREATE FOREIGN TABLE warrior_skills_1 (
   id INT,
   warrior_id INT,
   skill_id INT
 ) SERVER db_part1;
 
-CREATE FOREIGN TABLE warriors_part2 (
+CREATE FOREIGN TABLE warriors_2 (
   id INT,
   name VARCHAR,
   dob VARCHAR
 ) SERVER db_part2;
 
-CREATE FOREIGN TABLE skills_part2 (
+CREATE FOREIGN TABLE skills_2 (
   id INT,
   name VARCHAR
 ) SERVER db_part2;
 
-CREATE FOREIGN TABLE warrior_skills_part2 (
+CREATE FOREIGN TABLE warrior_skills_2 (
   id INT,
   warrior_id INT,
   skill_id INT
 ) SERVER db_part2;
 
 CREATE VIEW warriors AS
-SELECT * FROM warriors_part1
+SELECT * FROM warriors_1
 UNION ALL
-SELECT * FROM warriors_part2;
+SELECT * FROM warriors_2;
 
 CREATE VIEW skills AS
-SELECT * FROM skills_part1
+SELECT * FROM skills_1
 UNION ALL
-SELECT * FROM skills_part2;
+SELECT * FROM skills_2;
 
 CREATE VIEW warrior_skills AS
-SELECT * FROM warrior_skills_part1
+SELECT * FROM warrior_skills_1
 UNION ALL
-SELECT * FROM warrior_skills_part2;
+SELECT * FROM warrior_skills_2;
