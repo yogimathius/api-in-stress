@@ -15,7 +15,6 @@ services:
       - PGUSER=postgres
       - PG_PASSWORD=pass123
       - PGDATA=/var/lib/postgresql/data/some_name/
-
     healthcheck:
       test: ["CMD", "pg_isready", "-h", "localhost", "-p", "5432"]
       interval: 10s
@@ -25,7 +24,22 @@ services:
       - ./.env
     networks:
       - mynetwork
-    command: postgres -c listen_addresses='*' -c 'max_connections=6000'
+    command: |
+      postgres
+        -c listen_addresses='*'
+        -c 'max_connections=6000'
+        -c shared_preload_libraries=pg_stat_statements
+        -c pg_stat_statements.track=all
+        -c shared_buffers=512MB
+        -c effective_cache_size=16GB
+        -c work_mem=32MB
+        -c maintenance_work_mem=256MB
+        -c min_wal_size=256MB
+        -c max_wal_size=4GB
+        -c checkpoint_completion_target=1.0
+        -c random_page_cost=1.0
+        -c wal_buffers=32MB
+        -c default_statistics_target=100
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
       - ./sql/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
