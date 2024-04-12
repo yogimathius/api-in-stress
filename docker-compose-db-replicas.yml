@@ -23,7 +23,7 @@ services:
       - "./sql/db_primary.sql:/docker-entrypoint-initdb.d/setup.sql:cached"
     networks:
       - mynetwork
-    command: postgres -c listen_addresses='*' -c 'max_connections=6000'
+    command: postgres -c listen_addresses='*' -c 'max_connections=1000'
     env_file:
       - ./.env
     healthcheck:
