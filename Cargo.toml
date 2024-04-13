@@ -10,6 +10,7 @@ axum = "0.7.5"
 bb8 = "0.8"
 bb8-postgres = "0.7.0"
 dotenvy = "0.15"
+env_logger = "0.9"
 hyper = { version = "1.0", features = [] }
 hyper-util = { version = "0.1", features = ["tokio", "server-auto", "http1"] }
 serde = { version = "1.0", features = ["derive"] }
@@ -21,6 +22,7 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 # Needed for Postgres.
 openssl = "*"
+tower-http = { version = "0.5.2", features = ["full"] }
 [dependencies.uuid]
 version = "1.8.0"
 features = [
