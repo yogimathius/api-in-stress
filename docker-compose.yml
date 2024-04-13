@@ -10,7 +10,7 @@ services:
           cpus: "0.75"
           memory: "1536M"
     environment:
-      DATABASE_URL: postgres://postgres:pass123@postgres:5432/warriors
+      DATABASE_URL: postgresql://postgres:pass123@postgres:5432/warriors
     ports:
       - "3000"
     networks:
