@@ -10,12 +10,13 @@ use axum::{
 
 };
 use tower::{timeout::TimeoutLayer, ServiceBuilder};
-use std::time::Duration;
+use std::{sync::Arc, time::Duration};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use hyper::body::Incoming;
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server;
 use tower::Service;
+// use tokio::sync::Semaphore;
 
 use database::{create_warrior, get_warrior, search_warriors, count_warriors, handle_timeout_error};
 
@@ -38,6 +39,7 @@ async fn main() {
     // let mut conn = PgConnection::establish(&db_url).unwrap();
     let db_connection_str = std::env::var("DATABASE_URL")
         .unwrap_or_else(|_| "postgres://postgres:password@localhost".to_string());
+    // let semaphore = Arc::new(Semaphore::new(10));
 
     // set up connection pool
     let pool = PgPoolOptions::new()
@@ -56,8 +58,8 @@ async fn main() {
         .layer(tower::ServiceBuilder::new().concurrency_limit(64))
         .layer(
             ServiceBuilder::new()
-                // `timeout` will produce an error if the handler takes
-                // too long so we must handle those
+                // .layer(tower_http::trace::TraceLayer::new_for_http())
+                // .layer(tower_http::compression::CompressionLayer::new())
                 .layer(HandleErrorLayer::new(handle_timeout_error))
                 .layer(TimeoutLayer::new(Duration::from_secs(30)))
         );
