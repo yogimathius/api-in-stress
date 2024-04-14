@@ -1,22 +1,14 @@
-use axum::{
-    error_handling::HandleErrorLayer,
-    routing::{get, post},
-    Router,
-    extract::Request
-};
-use tower::{timeout::TimeoutLayer, ServiceBuilder};
-use std::time::Duration;
+use axum::extract::Request;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use hyper::body::Incoming;
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server;
 use tower::Service;
 
-use handlers::{create_warrior, get_warrior, search_warriors, count_warriors, handle_timeout_error};
-
 mod database;
 mod handlers;
 mod models;
+mod app;
 
 #[tokio::main]
 async fn main() {
@@ -28,22 +20,7 @@ async fn main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let pool = database::create_pool().await;
-
-    let app = Router::new()
-        .route("/warrior", post(create_warrior) )
-        .route("/warrior/:id", get(get_warrior))
-        .route("/warrior", get(search_warriors))
-        .route("/counting-warriors", get(count_warriors))
-        .with_state(pool)
-        .layer(tower::ServiceBuilder::new().concurrency_limit(64))
-        .layer(
-            ServiceBuilder::new()
-                .layer(tower_http::trace::TraceLayer::new_for_http())
-                .layer(tower_http::compression::CompressionLayer::new())
-                .layer(HandleErrorLayer::new(handle_timeout_error))
-                .layer(TimeoutLayer::new(Duration::from_secs(30)))
-        );
+    let app = app::create_app().await;
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     println!("Listening on: {}", listener.local_addr().unwrap());
 
