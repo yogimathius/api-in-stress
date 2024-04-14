@@ -1,5 +1,5 @@
 use sqlx::postgres::PgPoolOptions;
-mod database;
+mod handlers;
 mod models;
 
 use axum::{
@@ -17,7 +17,7 @@ use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server;
 use tower::Service;
 
-use database::{create_warrior, get_warrior, search_warriors, count_warriors, handle_timeout_error};
+use handlers::{create_warrior, get_warrior, search_warriors, count_warriors, handle_timeout_error};
 
 use dotenvy::dotenv;
 
@@ -54,8 +54,8 @@ async fn main() {
         .layer(tower::ServiceBuilder::new().concurrency_limit(64))
         .layer(
             ServiceBuilder::new()
-                // .layer(tower_http::trace::TraceLayer::new_for_http())
-                // .layer(tower_http::compression::CompressionLayer::new())
+                .layer(tower_http::trace::TraceLayer::new_for_http())
+                .layer(tower_http::compression::CompressionLayer::new())
                 .layer(HandleErrorLayer::new(handle_timeout_error))
                 .layer(TimeoutLayer::new(Duration::from_secs(30)))
         );
