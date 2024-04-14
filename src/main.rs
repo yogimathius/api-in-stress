@@ -10,6 +10,7 @@ mod database;
 mod handlers;
 mod models;
 mod app;
+mod redis;
 
 async fn handle_connection(socket: tokio::net::TcpStream, app: axum::Router) {
     let socket = TokioIo::new(socket);
