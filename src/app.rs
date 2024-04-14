@@ -19,8 +19,6 @@ pub async fn create_app() -> Router {
         .layer(tower::ServiceBuilder::new().concurrency_limit(64))
         .layer(
             ServiceBuilder::new()
-                .layer(tower_http::trace::TraceLayer::new_for_http())
-                .layer(tower_http::compression::CompressionLayer::new())
                 .layer(HandleErrorLayer::new(handle_timeout_error))
                 .layer(TimeoutLayer::new(Duration::from_secs(30)))
         )
