@@ -33,11 +33,11 @@ async fn main() {
 
     dotenv().ok();
 
-    println!("DATABASE_URL: {:?}", std::env::var("DATABASE_URL"));
     let db_connection_str = std::env::var("DATABASE_URL")
-        .unwrap_or_else(|_| "postgres://postgres:password@localhost".to_string());
+    .unwrap_or_else(|_| "postgres://postgres:password@localhost".to_string());
 
-    // set up connection pool
+    println!("db_connection_str: {}", db_connection_str);
+
     let pool = PgPoolOptions::new()
         .max_connections(60000)
         .acquire_timeout(Duration::from_secs(3))
