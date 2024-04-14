@@ -9,10 +9,12 @@ edition = "2021"
 axum = "0.7.5"
 bb8 = "0.8"
 bb8-postgres = "0.7.0"
+bb8-redis = "0.14.0"
 dotenvy = "0.15"
 env_logger = "0.9"
 hyper = { version = "1.0", features = [] }
 hyper-util = { version = "0.1", features = ["tokio", "server-auto", "http1"] }
+redis = "0.24.0"
 serde = { version = "1.0", features = ["derive"] }
 sqlx = { version = "0.6", features = [ "runtime-tokio-rustls", "postgres", "macros" ] }
 tokio = { version = "1.37.0", features = ["full"] }
