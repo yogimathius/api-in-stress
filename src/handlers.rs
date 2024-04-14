@@ -155,6 +155,7 @@ pub async fn search_warriors(
             eprintln!("Failed to cache warriors: {:?}", err);
             StatusCode::INTERNAL_SERVER_ERROR
         });
+        println!("Warriors cached successfully");
     }
 
     Ok(Json(warriors))
