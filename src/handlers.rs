@@ -90,7 +90,18 @@ pub async fn get_warrior(
     Path(user_id): Path<i32>,
 ) -> Result<Json<Warrior>, (StatusCode, String)> {
     println!("Warrior fetched for id: {:?}", user_id);
-
+    // Try to fetch the result from Redis cache
+    if let Ok(mut redis_conn) = state.redis_store.get().await {
+        println!("Fetching warrior from cache {}", user_id);
+        if let Ok(user_id) = redis_conn.get::<_, String>(&user_id).await.map_err(|err| {
+            eprintln!("Failed to fetch warriors from cache: {:?}", err);
+            StatusCode::INTERNAL_SERVER_ERROR
+        }) {
+            let warrior: Warrior = serde_json::from_str(&user_id).unwrap();
+            return Ok(Json(warrior));
+        }        
+    }
+    
     let query = format!(
         r#"SELECT id, name, dob
         FROM warriors
@@ -108,6 +119,16 @@ pub async fn get_warrior(
         name: row.get::<String, _>("name"),
         dob: row.get::<String, _>("dob"),
     };
+
+        // Cache the result in Redis
+        if let Ok(mut redis_conn) = state.redis_store.get().await {
+            let warrior_json = serde_json::to_string(&warrior).unwrap();
+            let _ = redis_conn.set::<_, String, ()>(&user_id, warrior_json).await.map_err(|err| {
+                eprintln!("Failed to cache warrior: {:?}", err);
+                StatusCode::INTERNAL_SERVER_ERROR
+            });
+            println!("Warrior cached successfully");
+        }
 
     Ok(Json(warrior))
 }
