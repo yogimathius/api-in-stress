@@ -98,23 +98,43 @@ INSERT INTO skills (name) VALUES
 ('Persuasion');
 
 -- Seed data for warrior_skills
--- Iterate over each warrior and assign them a random number of random skills
-DO $$DECLARE
-    warrior_id INT;
-    skill_count INT;
-    skill_id INT;
-BEGIN
-    FOR warrior_id IN 1..100 LOOP
-        -- Generate a random number of skills between 1 and 20 for each warrior
-        skill_count := floor(random() * 20) + 1;
-        
-        -- Assign random skills to the warrior
-        FOR i IN 1..skill_count LOOP
-            -- Randomly select a skill_id
-            skill_id := floor(random() * 23) + 1;
-            
-            -- Insert into warrior_skills table
-            INSERT INTO warrior_skills (warrior_id, skill_id) VALUES (warrior_id, skill_id);
-        END LOOP;
-    END LOOP;
-END$$;
+-- Seed data for warrior_skills for multiple warriors
+INSERT INTO warrior_skills (warrior_id, skill_id) VALUES
+-- Aragorn Stormborn
+(1, 1), (1, 3), (1, 5), (1, 7), (1, 8), (1, 9), (1, 12), (1, 14), (1, 16), (1, 17),
+-- Xena Dragonheart
+(2, 2), (2, 4), (2, 6), (2, 10), (2, 11), (2, 13), (2, 15), (2, 18), (2, 19), (2, 20),
+-- Conan Ironclad
+(3, 1), (3, 3), (3, 5), (3, 7), (3, 8), (3, 9), (3, 12), (3, 14), (3, 16), (3, 17),
+-- Brienne Starshield
+(4, 2), (4, 4), (4, 6), (4, 10), (4, 11), (4, 13), (4, 15), (4, 18), (4, 19), (4, 20),
+-- Drizzt Darkblade
+(5, 1), (5, 3), (5, 5), (5, 7), (5, 8), (5, 9), (5, 12), (5, 14), (5, 16), (5, 17),
+-- Leia Skywatcher
+(6, 2), (6, 4), (6, 6), (6, 10), (6, 11), (6, 13), (6, 15), (6, 18), (6, 19), (6, 20),
+-- Geralt Witchslayer
+(7, 1), (7, 3), (7, 5), (7, 7), (7, 8), (7, 9), (7, 12), (7, 14), (7, 16), (7, 17),
+-- Buffy Shadowslayer
+(8, 2), (8, 4), (8, 6), (8, 10), (8, 11), (8, 13), (8, 15), (8, 18), (8, 19), (8, 20),
+-- Inigo Montoya
+(9, 1), (9, 3), (9, 5), (9, 7), (9, 8), (9, 9), (9, 12), (9, 14), (9, 16), (9, 17),
+-- Alice Nightingale
+(10, 2), (10, 4), (10, 6), (10, 10), (10, 11), (10, 13), (10, 15), (10, 18), (10, 19), (10, 20),
+-- Jon Snow
+(11, 1), (11, 3), (11, 5), (11, 7), (11, 8), (11, 9), (11, 12), (11, 14), (11, 16), (11, 17),
+-- Ellen Ripley
+(12, 2), (12, 4), (12, 6), (12, 10), (12, 11), (12, 13), (12, 15), (12, 18), (12, 19), (12, 20),
+-- Maximus Decimus Meridius
+(13, 1), (13, 3), (13, 5), (13, 7), (13, 8), (13, 9), (13, 12), (13, 14), (13, 16), (13, 17),
+-- Katniss Everdeen
+(14, 2), (14, 4), (14, 6), (14, 10), (14, 11), (14, 13), (14, 15), (14, 18), (14, 19), (14, 20),
+-- Legolas Greenleaf
+(15, 1), (15, 3), (15, 5), (15, 7), (15, 8), (15, 9), (15, 12), (15, 14), (15, 16), (15, 17),
+-- Beatrix Kiddo
+(16, 2), (16, 4), (16, 6), (16, 10), (16, 11), (16, 13), (16, 15), (16, 18), (16, 19), (16, 20),
+-- Luke Skywalker
+(17, 1), (17, 3), (17, 5), (17, 7), (17, 8), (17, 9), (17, 12), (17, 14), (17, 16), (17, 17),
+-- Indiana Jones
+(18, 2), (18, 4), (18, 6), (18, 10), (18, 11), (18, 13), (18, 15), (18, 18), (18, 19), (18, 20),
+-- Mulan Swiftblade
+(19, 1), (19, 3), (19, 5), (19, 7), (19, 8), (19, 9), (19, 12), (19, 14), (19, 16), (19, 17);
