@@ -8,7 +8,8 @@ use axum::{
     http::{request::Parts, StatusCode},
     Json,
 };
-use redis::AsyncCommands; // Import the AsyncCommands trait to use the `set` method
+use redis::AsyncCommands;
+use tracing_subscriber::fmt::format; // Import the AsyncCommands trait to use the `set` method
 use std::time::SystemTime;
 
 use crate::models::{Warrior, NewWarrior};
@@ -64,6 +65,45 @@ pub async fn create_warrior(
 
     println!("Creating warrior: {:?}", warrior);
 
+    let skill_query = r#"SELECT id, name FROM skills WHERE name = ANY($1);"#;
+    // iterate over warrior skills
+    let skills = sqlx::query(skill_query)
+        .bind(warrior.skills.clone())
+        .fetch_all(&state.db_store)
+        .await
+        .map_err(|err| internal_error(err))?;
+
+    let new_skills = warrior.skills
+        .iter()
+        .filter(|skill| !skills.iter().any(|row| row.get::<String, _>("name") == **skill))
+        .collect::<Vec<&String>>();
+    
+    // Insert new skills
+    let new_skill_names: Vec<&str> = new_skills.iter().map(|s| s.as_str()).collect();
+    let placeholders = (0..new_skill_names.len()).map(|i| format!("${}", i + 1)).collect::<Vec<_>>().join(", ");
+    let new_skills_query = format!(
+        r#"
+        INSERT INTO skills (name) VALUES ({}) RETURNING id, name;
+        "#,
+        placeholders
+    );
+    
+    let new_skill_ids = sqlx::query(&new_skills_query)
+        .bind(&new_skill_names[..])
+        .fetch_all(&state.db_store)
+        .await
+        .map_err(|err| internal_error(err))?;
+    
+    
+
+    let full_skill_ids = skills
+        .iter().chain(new_skill_ids.iter())
+        .map(|row| row.get::<i32, _>("id"))
+        .collect::<Vec<i32>>();
+
+
+    println!("Full skill ids: {:?}", full_skill_ids);
+
     let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(
         r#"INSERT INTO warriors (name, dob) VALUES ('"#
     );
@@ -79,24 +119,24 @@ pub async fn create_warrior(
         .await
         .map_err(|err| internal_error(err))?;
 
-    // iterate over warrior skills
-    let _ = warrior.skills
-        .into_iter()
-        .for_each(|skill| {
-            // declare a skiil id var
-            // skill id = query
-            // { SELECT id FROM skills WHERE name = skill.name; }
-            // if query is empty
-                // create new skill
-            // 
-            println!("warrior skill is : {:?}", skill);
-        });
-
+    
     let warrior = Warrior {
         id: row.get::<i32, _>("id").to_string(),
         name: row.get::<String, _>("name"),
         dob: row.get::<String, _>("dob"),
     };
+    
+    // full_skill_ids.iter().for_each(|skill_id| async {
+    //     let query = format!(
+    //         r#"INSERT INTO warrior_skills (warrior_id, skill_id) VALUES ({}, {});"#,
+    //         warrior.id,
+    //         skill_id
+    //     );
+    //     let _ = sqlx::query(&query)
+    //         .execute(&state.db_store)
+    //         .await
+    //         .map_err(|err| internal_error(err));
+    // });
     match start.elapsed() {
         Ok(elapsed) => {
             // it prints '2'

@@ -11,6 +11,9 @@ RUN apk add --no-cache clang lld musl-dev git openssl-dev
 
 RUN cargo install cargo-watch
 
+# Copy the files to the Docker image
+COPY ./ ./
+
 RUN --mount=type=bind,source=src,target=src \
     --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
     --mount=type=bind,source=Cargo.lock,target=Cargo.lock \

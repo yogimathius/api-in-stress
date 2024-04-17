@@ -1,11 +1,11 @@
-use sqlx::{postgres::PgHasArrayType, Encode, FromRow};
+use sqlx::{Encode, FromRow};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, serde::Deserialize)]
 pub struct NewWarrior {
     pub name: String,
     pub dob: String,
-    pub skills: Vec<WarriorSkill>
+    pub skills: Vec<String>
 }
 
 #[derive(Debug, Deserialize, Serialize, FromRow)]
