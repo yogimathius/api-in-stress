@@ -9,6 +9,7 @@ use axum::{
     Json,
 };
 use redis::AsyncCommands; // Import the AsyncCommands trait to use the `set` method
+use std::time::SystemTime;
 
 use crate::models::{Warrior, NewWarrior};
 use std::collections::HashMap;
@@ -59,6 +60,8 @@ pub async fn create_warrior(
     State(state): State<AppState>,
     Json(warrior): Json<NewWarrior>
 ) ->  Result<Json<Warrior>, (StatusCode, String)>{
+    let start = SystemTime::now();
+
     println!("Creating warrior: {:?}", warrior);
 
     let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(
@@ -72,16 +75,38 @@ pub async fn create_warrior(
     // TODO - Error handling
 
     let row = sqlx::query(query_builder.build().sql())
-    .fetch_one(&state.db_store)
-    .await
-    .map_err(|err| internal_error(err))?;
+        .fetch_one(&state.db_store)
+        .await
+        .map_err(|err| internal_error(err))?;
+
+    // iterate over warrior skills
+    let _ = warrior.skills
+        .into_iter()
+        .for_each(|skill| {
+            // declare a skiil id var
+            // skill id = query
+            // { SELECT id FROM skills WHERE name = skill.name; }
+            // if query is empty
+                // create new skill
+            // 
+            println!("warrior skill is : {:?}", skill);
+        });
 
     let warrior = Warrior {
         id: row.get::<i32, _>("id").to_string(),
         name: row.get::<String, _>("name"),
         dob: row.get::<String, _>("dob"),
     };
-
+    match start.elapsed() {
+        Ok(elapsed) => {
+            // it prints '2'
+            println!("SystemTime taken to create warrior: {:?}", elapsed);
+        }
+        Err(e) => {
+            // an error occurred!
+            println!("Error: {e:?}");
+        }
+    }
     Ok(Json(warrior))
 }
 
@@ -89,6 +114,8 @@ pub async fn get_warrior(
     State(state): State<AppState>,
     Path(user_id): Path<i32>,
 ) -> Result<Json<Warrior>, (StatusCode, String)> {
+    let start = SystemTime::now();
+
     println!("Warrior fetched for id: {:?}", user_id);
     // Try to fetch the result from Redis cache
     if let Ok(mut redis_conn) = state.redis_store.get().await {
@@ -120,16 +147,25 @@ pub async fn get_warrior(
         dob: row.get::<String, _>("dob"),
     };
 
-        // Cache the result in Redis
-        if let Ok(mut redis_conn) = state.redis_store.get().await {
-            let warrior_json = serde_json::to_string(&warrior).unwrap();
-            let _ = redis_conn.set::<_, String, ()>(&user_id, warrior_json).await.map_err(|err| {
-                eprintln!("Failed to cache warrior: {:?}", err);
-                StatusCode::INTERNAL_SERVER_ERROR
-            });
-            println!("Warrior cached successfully");
+    // Cache the result in Redis
+    if let Ok(mut redis_conn) = state.redis_store.get().await {
+        let warrior_json: String = serde_json::to_string(&warrior).unwrap();
+        let _ = redis_conn.set::<_, String, ()>(&user_id, warrior_json).await.map_err(|err: redis::RedisError| {
+            eprintln!("Failed to cache warrior: {:?}", err);
+            StatusCode::INTERNAL_SERVER_ERROR
+        });
+        println!("Warrior cached successfully");
+    }
+    match start.elapsed() {
+        Ok(elapsed) => {
+            // it prints '2'
+            println!("SystemTime taken to fetch warrior: {:?}", elapsed);
         }
-
+        Err(e) => {
+            // an error occurred!
+            println!("Error: {e:?}");
+        }
+    }
     Ok(Json(warrior))
 }
 
@@ -137,6 +173,8 @@ pub async fn search_warriors(
     State(state): State<AppState>,
     Query(params): Query<HashMap<String, String>>
 ) -> Result<Json<Vec<Warrior>>, (StatusCode, String)> {
+    let start = SystemTime::now();
+
     let query_key = format!("warriors:{:?}", params);
 
     // Try to fetch the result from Redis cache
@@ -178,13 +216,24 @@ pub async fn search_warriors(
         });
         println!("Warriors cached successfully");
     }
-
+    match start.elapsed() {
+        Ok(elapsed) => {
+            // it prints '2'
+            println!("SystemTime taken to search warriors: {:?}", elapsed);
+        }
+        Err(e) => {
+            // an error occurred!
+            println!("Error: {e:?}");
+        }
+    }
     Ok(Json(warriors))
 }
 
 pub async fn count_warriors(
     State(state): State<AppState>,
 ) -> Result<Json<i64>, (StatusCode, String)>{
+    let start = SystemTime::now();
+
     println!("Warriors counted");
     // TODO - Error handling
 
@@ -194,7 +243,16 @@ pub async fn count_warriors(
         .fetch_one(&state.db_store)
         .await
         .map_err(|err| internal_error(err))?;
-
+    match start.elapsed() {
+        Ok(elapsed) => {
+            // it prints '2'
+            println!("SystemTime taken to count warrior: {:?}", elapsed);
+        }
+        Err(e) => {
+            // an error occurred!
+            println!("Error: {e:?}");
+        }
+    }
     Ok(Json(row.get::<i64, _>(0)))
     
 }
