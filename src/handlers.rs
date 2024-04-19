@@ -61,71 +61,43 @@ pub async fn create_warrior(
 
     println!("Creating warrior: {:?}", warrior);
 
-    let skill_query = r#"SELECT id, name FROM skills WHERE name = ANY($1);"#;
-    // iterate over warrior skills
-    let skills = sqlx::query(skill_query)
-        .bind(warrior.skills.clone())
-        .fetch_all(&state.db_store)
-        .await
-        .map_err(|err| internal_error(err))
-        .unwrap();
+    let complete_query = r#"
+        WITH inserted_warrior AS (
+            INSERT INTO warriors (name, dob)
+            VALUES ($1, $2)
+            RETURNING id
+        ),
+        inserted_skills AS (
+            INSERT INTO skills (name)
+            SELECT skill_name
+            FROM unnest(($3::text[])) AS skill_name
+            ON CONFLICT (name) DO NOTHING
+            RETURNING id, name
+        ),
+        inserted_warrior_skills AS (
+            INSERT INTO warrior_skills (warrior_id, skill_id)
+            SELECT inserted_warrior.id, COALESCE(existing_skills.id, new_skill.id)
+            FROM inserted_warrior
+            CROSS JOIN inserted_skills
+            LEFT JOIN skills existing_skills ON existing_skills.name = inserted_skills.name
+            LEFT JOIN (
+                SELECT id, name
+                FROM inserted_skills
+            ) AS new_skill ON true
+        )
+        SELECT id from inserted_warrior;
+    "#;
 
-    let new_skills = warrior.skills
-        .iter()
-        .filter(|skill| !skills.iter().any(|row| row.get::<String, _>("name") == **skill))
-        .collect::<Vec<&String>>();
-    
-    let new_skill_names: Vec<&str> = new_skills.iter().map(|s| s.as_str()).collect();
-    let new_skills_query = "INSERT INTO skills (name) SELECT * FROM UNNEST($1::text[]) RETURNING id, name;";
-    let new_skill_ids = sqlx::query(&new_skills_query)
-        .bind(&new_skill_names[..])
-        .fetch_all(&state.db_store)
-        .await
-        .map_err(|err| internal_error(err))
-        .unwrap();
-
-    let full_skill_ids = skills
-        .iter().chain(new_skill_ids.iter())
-        .map(|row| row.get::<i32, _>("id"))
-        .collect::<Vec<i32>>();
-
-
-    let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(
-        r#"INSERT INTO warriors (name, dob) VALUES ('"#
-    );
-
-    query_builder.push(warrior.name);
-    query_builder.push(r#"', '"#);
-    query_builder.push(warrior.dob);
-    query_builder.push(r#"') RETURNING id, name, dob;"#);
-    // TODO - Error handling
-
-    let row = sqlx::query(query_builder.build().sql())
+    let warrior_id: (i32,) = sqlx::query_as(&complete_query)
+        .bind(&warrior.name)
+        .bind(&warrior.dob)
+        .bind(&warrior.skills)
         .fetch_one(&state.db_store)
         .await
         .map_err(|err| internal_error(err))
         .unwrap();
 
-    let warrior = Warrior {
-        id: row.get::<i32, _>("id"),
-        name: row.get::<String, _>("name"),
-        dob: row.get::<String, _>("dob"),
-        fight_skills: None,
-    };
-    
-    // Insert warrior skills
-    let warrior_skill_query = "INSERT INTO warrior_skills (warrior_id, skill_id) VALUES ($1, $2);";
-    for skill_id in full_skill_ids {
-        let _ = sqlx::query(warrior_skill_query)
-            .bind(warrior.id)
-            .bind(skill_id)
-            .execute(&state.db_store)
-            .await
-            .map_err(|err| internal_error(err));
-    }
-
-
-    let location: String = format!("/name/{}", warrior.id);
+    let location: String = format!("/name/{:?}", warrior_id.0);
     let mut headers = HeaderMap::new();
     headers.insert("location", location.parse().unwrap());
 
@@ -138,7 +110,7 @@ pub async fn create_warrior(
         }
     }
     
-    (StatusCode::CREATED, headers, Json(warrior))
+    (StatusCode::CREATED, headers)
 }
 
 pub async fn get_warrior(
@@ -236,15 +208,6 @@ pub async fn search_warriors(
         .map_err(|err| internal_error(err))?;
     
     println!("Warriors fetched: {:?}", warriors);
-    // let warriors = rows
-    //     .into_iter()
-    //     .map(|row| Warrior {
-    //         id: row.get::<i32, _>("id").to_string(),
-    //         name: row.get::<String, _>("name"),
-    //         dob: row.get::<String, _>("dob"),
-    //         fight_skills: row.get::<Vec<String>, _>("warrior_skills")
-    //     })
-    //     .collect();
 
     // Cache the result in Redis
     if let Ok(mut redis_conn) = state.redis_store.get().await {
