@@ -161,23 +161,21 @@ pub async fn get_warrior(
     }
     
     let query = format!(
-        r#"SELECT id, name, dob
+        r#"SELECT warriors.*,
+            (SELECT array_agg(skills.name)
+                FROM skills
+                INNER JOIN warrior_skills ON skills.id = warrior_skills.skill_id
+                WHERE warrior_skills.warrior_id = warriors.id
+            ) AS fight_skills
         FROM warriors
         WHERE id = {};"#,
         user_id
     );
 
-    let row = sqlx::query(&query)
+    let warrior: Warrior = sqlx::query_as(&query)
         .fetch_one(&state.db_store)
         .await
         .map_err(|err| internal_error(err))?;
-
-    let warrior = Warrior {
-        id: row.get::<i32, _>("id"),
-        name: row.get::<String, _>("name"),
-        dob: row.get::<String, _>("dob"),
-        fight_skills: None,
-    };
 
     // Cache the result in Redis
     if let Ok(mut redis_conn) = state.redis_store.get().await {
