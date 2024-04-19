@@ -3,13 +3,9 @@ use bb8_redis::RedisConnectionManager;
 use bb8::Pool;
 use sqlx::{postgres::PgPool, Execute, Postgres, QueryBuilder, Row};
 use axum::{
-    async_trait,
-    extract::{FromRef, FromRequestParts, Path, Query, State},
-    http::{request::Parts, StatusCode},
-    Json,
+    async_trait, extract::{FromRef, FromRequestParts, Path, Query, State}, http::{request::Parts, HeaderMap, StatusCode}, response::IntoResponse, Json
 };
 use redis::AsyncCommands;
-use tracing_subscriber::fmt::format; // Import the AsyncCommands trait to use the `set` method
 use std::time::SystemTime;
 
 use crate::models::{Warrior, NewWarrior};
@@ -60,7 +56,7 @@ where
 pub async fn create_warrior(
     State(state): State<AppState>,
     Json(warrior): Json<NewWarrior>
-) ->  Result<Json<Warrior>, (StatusCode, String)>{
+) -> impl IntoResponse {
     let start = SystemTime::now();
 
     println!("Creating warrior: {:?}", warrior);
@@ -71,38 +67,28 @@ pub async fn create_warrior(
         .bind(warrior.skills.clone())
         .fetch_all(&state.db_store)
         .await
-        .map_err(|err| internal_error(err))?;
+        .map_err(|err| internal_error(err))
+        .unwrap();
 
     let new_skills = warrior.skills
         .iter()
         .filter(|skill| !skills.iter().any(|row| row.get::<String, _>("name") == **skill))
         .collect::<Vec<&String>>();
     
-    // Insert new skills
     let new_skill_names: Vec<&str> = new_skills.iter().map(|s| s.as_str()).collect();
-    let placeholders = (0..new_skill_names.len()).map(|i| format!("${}", i + 1)).collect::<Vec<_>>().join(", ");
-    let new_skills_query = format!(
-        r#"
-        INSERT INTO skills (name) VALUES ({}) RETURNING id, name;
-        "#,
-        placeholders
-    );
-    
+    let new_skills_query = "INSERT INTO skills (name) SELECT * FROM UNNEST($1::text[]) RETURNING id, name;";
     let new_skill_ids = sqlx::query(&new_skills_query)
         .bind(&new_skill_names[..])
         .fetch_all(&state.db_store)
         .await
-        .map_err(|err| internal_error(err))?;
-    
-    
+        .map_err(|err| internal_error(err))
+        .unwrap();
 
     let full_skill_ids = skills
         .iter().chain(new_skill_ids.iter())
         .map(|row| row.get::<i32, _>("id"))
         .collect::<Vec<i32>>();
 
-
-    println!("Full skill ids: {:?}", full_skill_ids);
 
     let mut query_builder: QueryBuilder<Postgres> = QueryBuilder::new(
         r#"INSERT INTO warriors (name, dob) VALUES ('"#
@@ -117,37 +103,41 @@ pub async fn create_warrior(
     let row = sqlx::query(query_builder.build().sql())
         .fetch_one(&state.db_store)
         .await
-        .map_err(|err| internal_error(err))?;
+        .map_err(|err| internal_error(err))
+        .unwrap();
 
-    
     let warrior = Warrior {
         id: row.get::<i32, _>("id").to_string(),
         name: row.get::<String, _>("name"),
         dob: row.get::<String, _>("dob"),
     };
     
-    // full_skill_ids.iter().for_each(|skill_id| async {
-    //     let query = format!(
-    //         r#"INSERT INTO warrior_skills (warrior_id, skill_id) VALUES ({}, {});"#,
-    //         warrior.id,
-    //         skill_id
-    //     );
-    //     let _ = sqlx::query(&query)
-    //         .execute(&state.db_store)
-    //         .await
-    //         .map_err(|err| internal_error(err));
-    // });
+    // Insert warrior skills
+    let warrior_skill_query = "INSERT INTO warrior_skills (warrior_id, skill_id) VALUES ($1, $2);";
+    for skill_id in full_skill_ids {
+        let _ = sqlx::query(warrior_skill_query)
+            .bind(warrior.id.parse::<i32>().unwrap())
+            .bind(skill_id)
+            .execute(&state.db_store)
+            .await
+            .map_err(|err| internal_error(err));
+    }
+
+
+    let location: String = format!("/name/{}", warrior.id);
+    let mut headers = HeaderMap::new();
+    headers.insert("location", location.parse().unwrap());
+
     match start.elapsed() {
         Ok(elapsed) => {
-            // it prints '2'
             println!("SystemTime taken to create warrior: {:?}", elapsed);
         }
         Err(e) => {
-            // an error occurred!
             println!("Error: {e:?}");
         }
     }
-    Ok(Json(warrior))
+    
+    (StatusCode::CREATED, headers, Json(warrior))
 }
 
 pub async fn get_warrior(
