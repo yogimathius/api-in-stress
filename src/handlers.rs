@@ -8,7 +8,7 @@ use axum::{
 use redis::AsyncCommands;
 use std::time::SystemTime;
 
-use crate::models::{Warrior, NewWarrior};
+use crate::models::{NewWarrior, Warrior};
 use std::collections::HashMap;
 use tower::BoxError;
 
@@ -107,16 +107,17 @@ pub async fn create_warrior(
         .unwrap();
 
     let warrior = Warrior {
-        id: row.get::<i32, _>("id").to_string(),
+        id: row.get::<i32, _>("id"),
         name: row.get::<String, _>("name"),
         dob: row.get::<String, _>("dob"),
+        fight_skills: None,
     };
     
     // Insert warrior skills
     let warrior_skill_query = "INSERT INTO warrior_skills (warrior_id, skill_id) VALUES ($1, $2);";
     for skill_id in full_skill_ids {
         let _ = sqlx::query(warrior_skill_query)
-            .bind(warrior.id.parse::<i32>().unwrap())
+            .bind(warrior.id)
             .bind(skill_id)
             .execute(&state.db_store)
             .await
@@ -172,9 +173,10 @@ pub async fn get_warrior(
         .map_err(|err| internal_error(err))?;
 
     let warrior = Warrior {
-        id: row.get::<i32, _>("id").to_string(),
+        id: row.get::<i32, _>("id"),
         name: row.get::<String, _>("name"),
         dob: row.get::<String, _>("dob"),
+        fight_skills: None,
     };
 
     // Cache the result in Redis
@@ -221,21 +223,30 @@ pub async fn search_warriors(
 
 
     // If not found in cache, execute the query and cache the result
-    let query = "SELECT id, name, dob FROM warriors LIMIT 50;";
+    let query = r#"
+        SELECT warriors.*,
+            (SELECT array_agg(skills.name)
+                FROM skills
+                INNER JOIN warrior_skills ON skills.id = warrior_skills.skill_id
+                WHERE warrior_skills.warrior_id = warriors.id
+            ) AS fight_skills
+        FROM warriors  LIMIT 50;"#;
 
-    let rows = sqlx::query(query)
+    let warriors:Vec<Warrior>  = sqlx::query_as(query)
         .fetch_all(&state.db_store)
         .await
         .map_err(|err| internal_error(err))?;
-
-    let warriors = rows
-        .into_iter()
-        .map(|row| Warrior {
-            id: row.get::<i32, _>("id").to_string(),
-            name: row.get::<String, _>("name"),
-            dob: row.get::<String, _>("dob"),
-        })
-        .collect();
+    
+    println!("Warriors fetched: {:?}", warriors);
+    // let warriors = rows
+    //     .into_iter()
+    //     .map(|row| Warrior {
+    //         id: row.get::<i32, _>("id").to_string(),
+    //         name: row.get::<String, _>("name"),
+    //         dob: row.get::<String, _>("dob"),
+    //         fight_skills: row.get::<Vec<String>, _>("warrior_skills")
+    //     })
+    //     .collect();
 
     // Cache the result in Redis
     if let Ok(mut redis_conn) = state.redis_store.get().await {
