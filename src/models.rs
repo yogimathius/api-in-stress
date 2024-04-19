@@ -1,4 +1,4 @@
-use sqlx::{Encode, FromRow};
+use sqlx::{Decode, Encode, FromRow};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, serde::Deserialize)]
@@ -10,12 +10,13 @@ pub struct NewWarrior {
 
 #[derive(Debug, Deserialize, Serialize, FromRow)]
 pub struct Warrior {
-    pub id: String,
+    pub id: i32,
     pub name: String,
     pub dob: String,
+    pub fight_skills: Option<Vec<String>>
 }
 
-#[derive(Debug, serde::Deserialize, Encode)]
+#[derive(Debug, Deserialize, Serialize, Encode, Decode)]
 pub struct WarriorSkill {
     pub name: String
 }
