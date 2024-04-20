@@ -8,6 +8,7 @@ use redis::AsyncCommands;
 use std::time::SystemTime;
 
 use crate::models::{NewWarrior, Warrior};
+use crate::queries::{CREATE_WARRIOR, GET_WARRIOR, SEARCH_WARRIORS};
 use std::collections::HashMap;
 use tower::BoxError;
 
@@ -19,34 +20,7 @@ pub async fn create_warrior(
 
     println!("Creating warrior: {:?}", warrior);
 
-    let complete_query = r#"
-        WITH inserted_warrior AS (
-            INSERT INTO warriors (name, dob)
-            VALUES ($1, $2)
-            RETURNING id
-        ),
-        inserted_skills AS (
-            INSERT INTO skills (name)
-            SELECT skill_name
-            FROM unnest(($3::text[])) AS skill_name
-            ON CONFLICT (name) DO NOTHING
-            RETURNING id, name
-        ),
-        inserted_warrior_skills AS (
-            INSERT INTO warrior_skills (warrior_id, skill_id)
-            SELECT inserted_warrior.id, COALESCE(existing_skills.id, new_skill.id)
-            FROM inserted_warrior
-            CROSS JOIN inserted_skills
-            LEFT JOIN skills existing_skills ON existing_skills.name = inserted_skills.name
-            LEFT JOIN (
-                SELECT id, name
-                FROM inserted_skills
-            ) AS new_skill ON true
-        )
-        SELECT id from inserted_warrior;
-    "#;
-
-    let warrior_id: (i32,) = sqlx::query_as(&complete_query)
+    let warrior_id: (i32,) = sqlx::query_as(&CREATE_WARRIOR)
         .bind(&warrior.name)
         .bind(&warrior.dob)
         .bind(&warrior.skills)
@@ -89,20 +63,9 @@ pub async fn get_warrior(
             return Ok(Json(warrior));
         }        
     }
-    
-    let query = format!(
-        r#"SELECT warriors.*,
-            (SELECT array_agg(skills.name)
-                FROM skills
-                INNER JOIN warrior_skills ON skills.id = warrior_skills.skill_id
-                WHERE warrior_skills.warrior_id = warriors.id
-            ) AS fight_skills
-        FROM warriors
-        WHERE id = {};"#,
-        user_id
-    );
 
-    let warrior: Warrior = sqlx::query_as(&query)
+    let warrior: Warrior = sqlx::query_as(&GET_WARRIOR)
+        .bind(user_id)
         .fetch_one(&state.db_store)
         .await
         .map_err(|err| internal_error(err))?;
@@ -149,18 +112,7 @@ pub async fn search_warriors(
         }        
     }
 
-
-    // If not found in cache, execute the query and cache the result
-    let query = r#"
-        SELECT warriors.*,
-            (SELECT array_agg(skills.name)
-                FROM skills
-                INNER JOIN warrior_skills ON skills.id = warrior_skills.skill_id
-                WHERE warrior_skills.warrior_id = warriors.id
-            ) AS fight_skills
-        FROM warriors  LIMIT 50;"#;
-
-    let warriors:Vec<Warrior>  = sqlx::query_as(query)
+    let warriors:Vec<Warrior>  = sqlx::query_as(SEARCH_WARRIORS)
         .fetch_all(&state.db_store)
         .await
         .map_err(|err| internal_error(err))?;
