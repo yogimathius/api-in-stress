@@ -12,6 +12,17 @@ use crate::queries::{CREATE_WARRIOR, GET_WARRIOR, SEARCH_WARRIORS};
 use std::collections::HashMap;
 use tower::BoxError;
 
+fn report_time(start: SystemTime, action: &str) {
+    match start.elapsed() {
+        Ok(elapsed) => {
+            println!("SystemTime taken to {:?}: {:?}", action, elapsed);
+        }
+        Err(e) => {
+            println!("Error: {e:?}");
+        }
+    }
+}
+
 pub async fn create_warrior(
     State(state): State<AppState>,
     Json(warrior): Json<NewWarrior>
@@ -33,14 +44,7 @@ pub async fn create_warrior(
     let mut headers = HeaderMap::new();
     headers.insert("location", location.parse().unwrap());
 
-    match start.elapsed() {
-        Ok(elapsed) => {
-            println!("SystemTime taken to create warrior: {:?}", elapsed);
-        }
-        Err(e) => {
-            println!("Error: {e:?}");
-        }
-    }
+    report_time(start, "create_warrior");
     
     (StatusCode::CREATED, headers)
 }
@@ -52,7 +56,7 @@ pub async fn get_warrior(
     let start = SystemTime::now();
 
     println!("Warrior fetched for id: {:?}", user_id);
-    // Try to fetch the result from Redis cache
+
     if let Ok(mut redis_conn) = state.redis_store.get().await {
         println!("Fetching warrior from cache {}", user_id);
         if let Ok(user_id) = redis_conn.get::<_, String>(&user_id).await.map_err(|err| {
@@ -60,6 +64,8 @@ pub async fn get_warrior(
             StatusCode::INTERNAL_SERVER_ERROR
         }) {
             let warrior: Warrior = serde_json::from_str(&user_id).unwrap();
+            report_time(start, "get_warrior");
+
             return Ok(Json(warrior));
         }        
     }
@@ -70,7 +76,6 @@ pub async fn get_warrior(
         .await
         .map_err(|err| internal_error(err))?;
 
-    // Cache the result in Redis
     if let Ok(mut redis_conn) = state.redis_store.get().await {
         let warrior_json: String = serde_json::to_string(&warrior).unwrap();
         let _ = redis_conn.set::<_, String, ()>(&user_id, warrior_json).await.map_err(|err: redis::RedisError| {
@@ -79,16 +84,9 @@ pub async fn get_warrior(
         });
         println!("Warrior cached successfully");
     }
-    match start.elapsed() {
-        Ok(elapsed) => {
-            // it prints '2'
-            println!("SystemTime taken to fetch warrior: {:?}", elapsed);
-        }
-        Err(e) => {
-            // an error occurred!
-            println!("Error: {e:?}");
-        }
-    }
+
+    report_time(start, "get_warrior");
+
     Ok(Json(warrior))
 }
 
@@ -100,7 +98,6 @@ pub async fn search_warriors(
 
     let query_key = format!("warriors:{:?}", params);
 
-    // Try to fetch the result from Redis cache
     if let Ok(mut redis_conn) = state.redis_store.get().await {
         println!("Fetching warriors from cache {}", query_key);
         if let Ok(warriors_json) = redis_conn.get::<_, String>(&query_key).await.map_err(|err| {
@@ -108,6 +105,8 @@ pub async fn search_warriors(
             StatusCode::INTERNAL_SERVER_ERROR
         }) {
             let warriors: Vec<Warrior> = serde_json::from_str(&warriors_json).unwrap();
+            report_time(start, "search_warriors");
+
             return Ok(Json(warriors));
         }        
     }
@@ -117,9 +116,7 @@ pub async fn search_warriors(
         .await
         .map_err(|err| internal_error(err))?;
     
-    println!("Warriors fetched: {:?}", warriors);
 
-    // Cache the result in Redis
     if let Ok(mut redis_conn) = state.redis_store.get().await {
         let warriors_json = serde_json::to_string(&warriors).unwrap();
         let _ = redis_conn.set::<_, String, ()>(&query_key, warriors_json).await.map_err(|err| {
@@ -128,16 +125,7 @@ pub async fn search_warriors(
         });
         println!("Warriors cached successfully");
     }
-    match start.elapsed() {
-        Ok(elapsed) => {
-            // it prints '2'
-            println!("SystemTime taken to search warriors: {:?}", elapsed);
-        }
-        Err(e) => {
-            // an error occurred!
-            println!("Error: {e:?}");
-        }
-    }
+    report_time(start, "search_warriors");
     Ok(Json(warriors))
 }
 
@@ -155,16 +143,9 @@ pub async fn count_warriors(
         .fetch_one(&state.db_store)
         .await
         .map_err(|err| internal_error(err))?;
-    match start.elapsed() {
-        Ok(elapsed) => {
-            // it prints '2'
-            println!("SystemTime taken to count warrior: {:?}", elapsed);
-        }
-        Err(e) => {
-            // an error occurred!
-            println!("Error: {e:?}");
-        }
-    }
+
+    report_time(start, "count_warriors");
+
     Ok(Json(row.get::<i64, _>(0)))
     
 }
