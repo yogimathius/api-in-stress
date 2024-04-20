@@ -6,9 +6,10 @@ use axum::{
 };
 use std::time::Duration;
 use tower::{timeout::TimeoutLayer, ServiceBuilder};
-use crate::handlers::{create_warrior, get_warrior, search_warriors, count_warriors, handle_timeout_error};
+use crate::handlers::{create_warrior, get_warrior, search_warriors, count_warriors};
 use crate::database::create_pool;
 use crate::redis;
+use crate::utilities::handle_timeout_error;
 
 pub async fn create_app() -> Router {
     let pool = create_pool().await;

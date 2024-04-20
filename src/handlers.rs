@@ -9,19 +9,8 @@ use std::time::SystemTime;
 
 use crate::models::{NewWarrior, Warrior};
 use crate::queries::{CREATE_WARRIOR, GET_WARRIOR, SEARCH_WARRIORS};
+use crate::utilities::{report_time, internal_error};
 use std::collections::HashMap;
-use tower::BoxError;
-
-fn report_time(start: SystemTime, action: &str) {
-    match start.elapsed() {
-        Ok(elapsed) => {
-            println!("SystemTime taken to {:?}: {:?}", action, elapsed);
-        }
-        Err(e) => {
-            println!("Error: {e:?}");
-        }
-    }
-}
 
 pub async fn create_warrior(
     State(state): State<AppState>,
@@ -57,14 +46,14 @@ pub async fn get_warrior(
 
     println!("Warrior fetched for id: {:?}", user_id);
 
-    if let Ok(mut redis_conn) = state.redis_store.get().await {
-        if let Ok(user_id) = redis_conn.get::<_, String>(&user_id).await {
-            let warrior: Warrior = serde_json::from_str(&user_id).unwrap();
-            report_time(start, "get_warrior from cache");
+    let mut redis_conn: bb8::PooledConnection<'_, bb8_redis::RedisConnectionManager> = state.redis_store.get().await.unwrap();
 
-            return Ok(Json(warrior));
-        }        
-    }
+    if let Ok(user_id) = redis_conn.get::<_, String>(&user_id).await {
+        let warrior: Warrior = serde_json::from_str(&user_id).unwrap();
+        report_time(start, "get_warrior from cache");
+
+        return Ok(Json(warrior));
+    }        
 
     let warrior: Warrior = sqlx::query_as(&GET_WARRIOR)
         .bind(user_id)
@@ -72,14 +61,12 @@ pub async fn get_warrior(
         .await
         .map_err(|err| internal_error(err))?;
 
-    if let Ok(mut redis_conn) = state.redis_store.get().await {
-        let warrior_json: String = serde_json::to_string(&warrior).unwrap();
-        let _ = redis_conn.set::<_, String, ()>(&user_id, warrior_json).await.map_err(|err: redis::RedisError| {
-            eprintln!("Failed to cache warrior: {:?}", err);
-            StatusCode::INTERNAL_SERVER_ERROR
-        });
-        println!("Warrior cached successfully");
-    }
+    let warrior_json: String = serde_json::to_string(&warrior).unwrap();
+    let _ = redis_conn.set::<_, String, ()>(&user_id, warrior_json).await.map_err(|err: redis::RedisError| {
+        eprintln!("Failed to cache warrior: {:?}", err);
+        StatusCode::INTERNAL_SERVER_ERROR
+    });
+    println!("Warrior cached successfully");
 
     report_time(start, "get_warrior");
 
@@ -94,15 +81,14 @@ pub async fn search_warriors(
 
     let query_key = format!("warriors:{:?}", params);
 
-    if let Ok(mut redis_conn) = state.redis_store.get().await {
-        println!("Fetching warriors from cache {}", query_key);
-        if let Ok(warriors_json) = redis_conn.get::<_, String>(&query_key).await {
-            let warriors: Vec<Warrior> = serde_json::from_str(&warriors_json).unwrap();
-            report_time(start, "search_warriors from cache");
+    let mut redis_conn: bb8::PooledConnection<'_, bb8_redis::RedisConnectionManager> = state.redis_store.get().await.unwrap();
+    println!("Fetching warriors from cache {}", query_key);
+    if let Ok(warriors_json) = redis_conn.get::<_, String>(&query_key).await {
+        let warriors: Vec<Warrior> = serde_json::from_str(&warriors_json).unwrap();
+        report_time(start, "search_warriors from cache");
 
-            return Ok(Json(warriors));
-        }        
-    }
+        return Ok(Json(warriors));
+    }        
 
     let warriors:Vec<Warrior>  = sqlx::query_as(SEARCH_WARRIORS)
         .fetch_all(&state.db_store)
@@ -110,14 +96,13 @@ pub async fn search_warriors(
         .map_err(|err| internal_error(err))?;
     
 
-    if let Ok(mut redis_conn) = state.redis_store.get().await {
-        let warriors_json = serde_json::to_string(&warriors).unwrap();
-        let _ = redis_conn.set::<_, String, ()>(&query_key, warriors_json).await.map_err(|err| {
-            eprintln!("Failed to cache warriors: {:?}", err);
-            StatusCode::INTERNAL_SERVER_ERROR
-        });
-        println!("Warriors cached successfully");
-    }
+    let warriors_json = serde_json::to_string(&warriors).unwrap();
+    let _ = redis_conn.set::<_, String, ()>(&query_key, warriors_json).await.map_err(|err| {
+        eprintln!("Failed to cache warriors: {:?}", err);
+        StatusCode::INTERNAL_SERVER_ERROR
+    });
+    println!("Warriors cached successfully");
+
     report_time(start, "search_warriors");
     Ok(Json(warriors))
 }
@@ -141,26 +126,4 @@ pub async fn count_warriors(
 
     Ok(Json(row.get::<i64, _>(0)))
     
-}
-
-pub async fn handle_timeout_error(err: BoxError) -> (StatusCode, String) {
-    println!("Error: {:?}", err);
-    if err.is::<tower::timeout::error::Elapsed>() {
-        (
-            StatusCode::REQUEST_TIMEOUT,
-            "Request took too long".to_string(),
-        )
-    } else {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            format!("Unhandled internal error: {err}"),
-        )
-    }
-}
-
-pub fn internal_error<E>(err: E) -> (StatusCode, String)
-where
-    E: std::error::Error,
-{
-    (StatusCode::INTERNAL_SERVER_ERROR, err.to_string())
 }
