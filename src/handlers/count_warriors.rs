@@ -10,9 +10,6 @@ pub async fn count_warriors(
 ) -> Result<Json<i64>, (StatusCode, String)>{
     let start = SystemTime::now();
 
-    println!("Warriors counted");
-    // TODO - Error handling
-
     let query = "SELECT COUNT(*) FROM warriors;";
 
     let row = sqlx::query(query)
