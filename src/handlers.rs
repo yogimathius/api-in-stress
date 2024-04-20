@@ -58,13 +58,9 @@ pub async fn get_warrior(
     println!("Warrior fetched for id: {:?}", user_id);
 
     if let Ok(mut redis_conn) = state.redis_store.get().await {
-        println!("Fetching warrior from cache {}", user_id);
-        if let Ok(user_id) = redis_conn.get::<_, String>(&user_id).await.map_err(|err| {
-            eprintln!("Failed to fetch warriors from cache: {:?}", err);
-            StatusCode::INTERNAL_SERVER_ERROR
-        }) {
+        if let Ok(user_id) = redis_conn.get::<_, String>(&user_id).await {
             let warrior: Warrior = serde_json::from_str(&user_id).unwrap();
-            report_time(start, "get_warrior");
+            report_time(start, "get_warrior from cache");
 
             return Ok(Json(warrior));
         }        
@@ -100,12 +96,9 @@ pub async fn search_warriors(
 
     if let Ok(mut redis_conn) = state.redis_store.get().await {
         println!("Fetching warriors from cache {}", query_key);
-        if let Ok(warriors_json) = redis_conn.get::<_, String>(&query_key).await.map_err(|err| {
-            eprintln!("Failed to fetch warriors from cache: {:?}", err);
-            StatusCode::INTERNAL_SERVER_ERROR
-        }) {
+        if let Ok(warriors_json) = redis_conn.get::<_, String>(&query_key).await {
             let warriors: Vec<Warrior> = serde_json::from_str(&warriors_json).unwrap();
-            report_time(start, "search_warriors");
+            report_time(start, "search_warriors from cache");
 
             return Ok(Json(warriors));
         }        
