@@ -14,8 +14,6 @@ pub async fn create_warrior(
 ) -> impl IntoResponse {
     let start = SystemTime::now();
 
-    println!("Creating warrior: {:?}", warrior);
-
     let warrior_id: (i32,) = sqlx::query_as(&CREATE_WARRIOR)
         .bind(&warrior.name)
         .bind(&warrior.dob)
