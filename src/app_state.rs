@@ -4,7 +4,7 @@ use sqlx::postgres::PgPool;
 use axum::{
     async_trait, extract::{FromRef, FromRequestParts}, http::{request::Parts, StatusCode}
 };
-use crate::handlers::internal_error;
+use crate::utilities::internal_error;
 pub struct DatabaseConnection(pub sqlx::pool::PoolConnection<sqlx::Postgres>);
 type RedisPool = Pool<RedisConnectionManager>;
 pub struct RedisPoolWrapper(pub RedisPool);
