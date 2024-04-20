@@ -6,7 +6,7 @@ pub async fn create_pool() -> sqlx::PgPool {
         .unwrap_or_else(|_| "postgres://postgres:password@localhost".to_string());
 
     PgPoolOptions::new()
-        .max_connections(60000)
+        .max_connections(4000)
         .acquire_timeout(Duration::from_secs(3))
         .connect(&db_connection_str)
         .await

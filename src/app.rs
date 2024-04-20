@@ -26,7 +26,7 @@ pub async fn create_app() -> Router {
         .route("/warrior", get(search_warriors))
         .route("/counting-warriors", get(count_warriors))
         .with_state(app_state)
-        .layer(tower::ServiceBuilder::new().concurrency_limit(64))
+        .layer(tower::ServiceBuilder::new().concurrency_limit(200))
         .layer(
             ServiceBuilder::new()
                 .layer(HandleErrorLayer::new(handle_timeout_error))
