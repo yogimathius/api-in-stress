@@ -1,7 +1,6 @@
 use crate::app_state::AppState;
 use sqlx::Row;
 use axum::{extract::State, http::StatusCode, Json};
-use redis::AsyncCommands;
 use std::time::SystemTime;
 
 use crate::utilities::{report_time, internal_error};
