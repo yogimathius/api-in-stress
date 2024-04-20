@@ -1,3 +1,4 @@
+use crate::app_state::AppState;
 use axum::{
     error_handling::HandleErrorLayer,
     routing::{get, post},
@@ -5,7 +6,7 @@ use axum::{
 };
 use std::time::Duration;
 use tower::{timeout::TimeoutLayer, ServiceBuilder};
-use crate::handlers::{create_warrior, get_warrior, search_warriors, count_warriors, handle_timeout_error, AppState};
+use crate::handlers::{create_warrior, get_warrior, search_warriors, count_warriors, handle_timeout_error};
 use crate::database::create_pool;
 use crate::redis;
 
