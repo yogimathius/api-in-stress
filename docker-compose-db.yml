@@ -45,17 +45,6 @@ services:
       - "./sql/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql"
       - "./sql/fill_tables.sql:/docker-entrypoint-initdb.d/fill_tables.sql"
 
-  # pgbouncer:
-  #   image: pgbouncer/pgbouncer:latest
-  #   volumes:
-  #     - ./pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini
-  #   ports:
-  #     - "5432:5432"
-  #   networks:
-  #     - mynetwork
-  #   environment:
-  #     DATABASES_HOST: postgres
-
 networks:
   mynetwork:
 
