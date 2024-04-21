@@ -16,3 +16,7 @@ CREATE TABLE IF NOT EXISTS warrior_skills (
   FOREIGN KEY (warrior_id) REFERENCES warriors(id),
   FOREIGN KEY (skill_id) REFERENCES skills(id)
 );
+
+CREATE INDEX idx_skills_name ON skills (name);
+CREATE INDEX idx_warrior_skills_warrior_id ON warrior_skills (warrior_id);
+CREATE INDEX idx_warrior_skills_skill_id ON warrior_skills (skill_id);
