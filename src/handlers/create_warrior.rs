@@ -2,17 +2,15 @@ use crate::app_state::AppState;
 use axum::{
     extract::State, http::{HeaderMap, StatusCode}, response::IntoResponse, Json
 };
-use std::time::SystemTime;
 
 use crate::models::NewWarrior;
 use crate::queries::CREATE_WARRIOR;
-use crate::utilities::{report_time, internal_error};
+use crate::utilities::internal_error;
 
 pub async fn create_warrior(
     State(state): State<AppState>,
     Json(warrior): Json<NewWarrior>
 ) -> impl IntoResponse {
-    let start = SystemTime::now();
 
     let warrior_id: (i32,) = sqlx::query_as(&CREATE_WARRIOR)
         .bind(&warrior.name)
