@@ -22,7 +22,7 @@ pub async fn search_warriors(
     let mut redis_conn: bb8::PooledConnection<'_, bb8_redis::RedisConnectionManager> = state.redis_store.get().await.unwrap();
     if let Ok(warriors_json) = redis_conn.get::<_, String>(&query_key).await {
         let warriors: Vec<Warrior> = serde_json::from_str(&warriors_json).unwrap();
-        report_time(start, "search_warriors from cache");
+        // report_time(start, "search_warriors from cache");
 
         return Ok(Json(warriors));
     }        
@@ -40,6 +40,6 @@ pub async fn search_warriors(
     });
     println!("Warriors cached successfully");
 
-    report_time(start, "search_warriors");
+    // report_time(start, "search_warriors");
     Ok(Json(warriors))
 }

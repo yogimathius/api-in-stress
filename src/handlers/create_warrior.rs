@@ -27,7 +27,7 @@ pub async fn create_warrior(
     let mut headers = HeaderMap::new();
     headers.insert("location", location.parse().unwrap());
 
-    report_time(start, "create_warrior");
+    // report_time(start, "create_warrior");
     
     (StatusCode::CREATED, headers)
 }

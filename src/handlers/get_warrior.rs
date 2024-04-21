@@ -20,7 +20,7 @@ pub async fn get_warrior(
 
     if let Ok(user_id) = redis_conn.get::<_, String>(&user_id).await {
         let warrior: Warrior = serde_json::from_str(&user_id).unwrap();
-        report_time(start, "get_warrior from cache");
+        // report_time(start, "get_warrior from cache");
 
         return Ok(Json(warrior));
     }        
@@ -38,7 +38,7 @@ pub async fn get_warrior(
     });
     println!("Warrior cached successfully");
 
-    report_time(start, "get_warrior");
+    // report_time(start, "get_warrior");
 
     Ok(Json(warrior))
 }
