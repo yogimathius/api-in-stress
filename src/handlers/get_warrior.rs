@@ -4,17 +4,15 @@ use axum::{
     extract::{Path, State}, http::StatusCode, Json
 };
 use redis::AsyncCommands;
-use std::time::SystemTime;
 
 use crate::models::Warrior;
 use crate::queries::GET_WARRIOR;
-use crate::utilities::{report_time, internal_error};
+use crate::utilities::internal_error;
 
 pub async fn get_warrior(
     State(state): State<AppState>,
     Path(user_id): Path<i32>,
 ) -> Result<Json<Warrior>, (StatusCode, String)> {
-    let start = SystemTime::now();
 
     let mut redis_conn: bb8::PooledConnection<'_, bb8_redis::RedisConnectionManager> = state.redis_store.get().await.unwrap();
 
@@ -37,8 +35,6 @@ pub async fn get_warrior(
         StatusCode::INTERNAL_SERVER_ERROR
     });
     println!("Warrior cached successfully");
-
-    // report_time(start, "get_warrior");
 
     Ok(Json(warrior))
 }

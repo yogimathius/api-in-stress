@@ -4,25 +4,21 @@ use axum::{
     extract::{Query, State}, http::StatusCode, Json
 };
 use redis::AsyncCommands;
-use std::time::SystemTime;
 
 use crate::models::Warrior;
 use crate::queries::SEARCH_WARRIORS;
-use crate::utilities::{report_time, internal_error};
+use crate::utilities::internal_error;
 use std::collections::HashMap;
 
 pub async fn search_warriors(
     State(state): State<AppState>,
     Query(params): Query<HashMap<String, String>>
 ) -> Result<Json<Vec<Warrior>>, (StatusCode, String)> {
-    let start = SystemTime::now();
-
     let query_key = format!("warriors:{:?}", params);
 
     let mut redis_conn: bb8::PooledConnection<'_, bb8_redis::RedisConnectionManager> = state.redis_store.get().await.unwrap();
     if let Ok(warriors_json) = redis_conn.get::<_, String>(&query_key).await {
         let warriors: Vec<Warrior> = serde_json::from_str(&warriors_json).unwrap();
-        // report_time(start, "search_warriors from cache");
 
         return Ok(Json(warriors));
     }        
