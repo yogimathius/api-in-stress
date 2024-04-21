@@ -4,23 +4,12 @@ WITH inserted_warrior AS (
     VALUES ($1, $2)
     RETURNING id
 ),
-inserted_skills AS (
-    INSERT INTO skills (name)
-    SELECT skill_name
-    FROM unnest(($3::text[])) AS skill_name
-    ON CONFLICT (name) DO NOTHING
-    RETURNING id, name
-),
 inserted_warrior_skills AS (
     INSERT INTO warrior_skills (warrior_id, skill_id)
-    SELECT inserted_warrior.id, COALESCE(existing_skills.id, new_skill.id)
+    SELECT inserted_warrior.id, s.id
     FROM inserted_warrior
-    CROSS JOIN inserted_skills
-    LEFT JOIN skills existing_skills ON existing_skills.name = inserted_skills.name
-    LEFT JOIN (
-        SELECT id, name
-        FROM inserted_skills
-    ) AS new_skill ON true
+    CROSS JOIN unnest($3::text[]) AS skill_name
+    JOIN skills s ON s.name = skill_name
 )
 SELECT id from inserted_warrior;
 "#;
