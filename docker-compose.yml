@@ -4,7 +4,7 @@ services:
   api-gateway:
     build: .
     deploy:
-      replicas: 3
+      replicas: 2
       resources:
         limits:
           cpus: "0.5"
