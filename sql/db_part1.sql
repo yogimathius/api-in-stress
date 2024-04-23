@@ -1,5 +1,7 @@
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 CREATE TABLE IF NOT EXISTS warriors_1 (
-  id SERIAL PRIMARY KEY,
+  id VARCHAR PRIMARY KEY, 
   name VARCHAR NOT NULL,
   dob VARCHAR NOT NULL
 );
@@ -11,7 +13,7 @@ CREATE TABLE IF NOT EXISTS skills_1 (
 
 CREATE TABLE IF NOT EXISTS warrior_skills_1 (
   id SERIAL PRIMARY KEY,
-  warrior_id INT NOT NULL,
+  warrior_id VARCHAR NOT NULL,
   skill_id INT NOT NULL,
   FOREIGN KEY (warrior_id) REFERENCES warriors_1(id),
   FOREIGN KEY (skill_id) REFERENCES skills_1(id)
