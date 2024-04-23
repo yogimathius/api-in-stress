@@ -4,15 +4,41 @@ use axum::{
 };
 
 use crate::models::NewWarrior;
-use crate::queries::CREATE_WARRIOR;
 use crate::utilities::internal_error;
+use uuid::Uuid;
+
+async fn generate_uuid() -> String {
+    // Generate a new UUID
+    let uuid = Uuid::new_v4();
+
+    // Return the UUID as a string
+    uuid.to_string()
+}
 
 pub async fn create_warrior(
     State(state): State<AppState>,
     Json(warrior): Json<NewWarrior>
 ) -> impl IntoResponse {
-
-    let warrior_id: (i32,) = sqlx::query_as(&CREATE_WARRIOR)
+    let uuid = generate_uuid().await;
+    let database_shard = std::env::var("SHARD").unwrap();
+    let create_warrior_query = format!(r#"
+    WITH inserted_warrior AS (
+        INSERT INTO warriors_{} (id, name, dob)
+        VALUES ($1, $2, $3)
+        RETURNING id
+    ),
+    inserted_warrior_skills AS (
+        INSERT INTO warrior_skills_{} (warrior_id, skill_id)
+        SELECT inserted_warrior.id, s.id
+        FROM inserted_warrior
+        CROSS JOIN unnest($4::text[]) AS skill_name
+        JOIN skills_{} s ON s.name = skill_name
+    )
+    SELECT id FROM inserted_warrior;
+    "#, database_shard, database_shard, database_shard);
+    // println!("create_warrior_query: {}", create_warrior_query);
+    let warrior_id: (String,) = sqlx::query_as(&create_warrior_query)
+        .bind(&uuid)
         .bind(&warrior.name)
         .bind(&warrior.dob)
         .bind(&warrior.skills)
