@@ -24,7 +24,7 @@ pub async fn search_warriors(
     }        
 
     let warriors:Vec<Warrior>  = sqlx::query_as(SEARCH_WARRIORS)
-        .fetch_all(&state.db_store)
+        .fetch_all(&state.primary_db_store)
         .await
         .map_err(|err| internal_error(err))?;
     

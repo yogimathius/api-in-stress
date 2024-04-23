@@ -27,7 +27,7 @@ pub async fn get_warrior(
 
     let warrior: Warrior = sqlx::query_as(&GET_WARRIOR)
         .bind(user_id)
-        .fetch_one(&state.db_store)
+        .fetch_one(&state.primary_db_store)
         .await
         .map_err(|err| internal_error(err))?;
 
