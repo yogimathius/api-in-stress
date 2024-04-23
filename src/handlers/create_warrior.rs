@@ -19,6 +19,17 @@ pub async fn create_warrior(
     State(state): State<AppState>,
     Json(warrior): Json<NewWarrior>
 ) -> impl IntoResponse {
+    let mut headers = HeaderMap::new();
+    headers.insert("content-type", "application/json".parse().unwrap());
+
+    if (warrior.skills.len() == 0 || warrior.skills.len() > 20) {
+        return (StatusCode::BAD_REQUEST, headers, "Skills cannot be empty");
+    }
+
+    if (warrior.skills.iter().any(|skill| skill.len() > 250)) {
+        return (StatusCode::BAD_REQUEST, headers, "Skill name cannot be more than 250 characters");
+    }
+
     let uuid = generate_uuid().await;
     let database_shard = std::env::var("SHARD").unwrap();
     let create_warrior_query = format!(r#"
@@ -48,10 +59,9 @@ pub async fn create_warrior(
         .unwrap();
 
     let location: String = format!("/name/{:?}", warrior_id.0);
-    let mut headers = HeaderMap::new();
     headers.insert("location", location.parse().unwrap());
 
     // report_time(start, "create_warrior");
     
-    (StatusCode::CREATED, headers)
+    (StatusCode::CREATED, headers, "")
 }
