@@ -10,7 +10,7 @@ pub struct NewWarrior {
 
 #[derive(Debug, Deserialize, Serialize, FromRow)]
 pub struct Warrior {
-    pub id: i32,
+    pub id: String,
     pub name: String,
     pub dob: String,
     pub fight_skills: Option<Vec<String>>
