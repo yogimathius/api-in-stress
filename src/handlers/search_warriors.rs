@@ -6,7 +6,7 @@ use axum::{
 use redis::AsyncCommands;
 
 use crate::models::Warrior;
-use crate::queries::SEARCH_WARRIORS;
+use super::queries::SEARCH_WARRIORS;
 use crate::utilities::internal_error;
 use std::collections::HashMap;
 

@@ -12,7 +12,6 @@ mod models;
 mod app;
 mod redis;
 mod app_state;
-mod queries;
 mod utilities;
 
 async fn handle_connection(socket: tokio::net::TcpStream, app: axum::Router) {
