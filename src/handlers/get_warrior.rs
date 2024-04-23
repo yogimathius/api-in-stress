@@ -6,8 +6,10 @@ use axum::{
 use redis::AsyncCommands;
 
 use crate::models::Warrior;
-use crate::queries::GET_WARRIOR;
+
 use crate::utilities::internal_error;
+
+use super::queries::GET_WARRIOR;
 
 pub async fn get_warrior(
     State(state): State<AppState>,
