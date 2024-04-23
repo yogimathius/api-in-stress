@@ -7,6 +7,7 @@ use hyper_util::server;
 use tower::Service;
 
 mod database;
+mod primary_database;
 mod handlers;
 mod models;
 mod app;
