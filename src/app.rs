@@ -8,15 +8,18 @@ use std::time::Duration;
 use tower::{timeout::TimeoutLayer, ServiceBuilder};
 use crate::handlers::{create_warrior::create_warrior, get_warrior::get_warrior, search_warriors::search_warriors, count_warriors::count_warriors};
 use crate::database::create_pool;
+use crate::primary_database::create_primary_pool;
 use crate::redis;
 use crate::utilities::handle_timeout_error;
 
 pub async fn create_app() -> Router {
     let pool = create_pool().await;
+    let primary_pool = create_primary_pool().await;
     let redis_pool = redis::create_pool().await;
 
     let app_state = AppState {
         db_store: pool,
+        primary_db_store: primary_pool,
         redis_store: redis_pool,
     };
 

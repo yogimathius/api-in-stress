@@ -12,6 +12,7 @@ pub struct RedisPoolWrapper(pub RedisPool);
 #[derive(Clone)]
 pub struct AppState {
     pub(crate) db_store: sqlx::PgPool,
+    pub(crate) primary_db_store: sqlx::PgPool,
     pub(crate) redis_store:  Pool<RedisConnectionManager>,
 }
 
