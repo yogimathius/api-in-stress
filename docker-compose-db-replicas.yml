@@ -37,7 +37,8 @@ services:
     depends_on: []
     volumes:
       - "db_part1:/var/lib/postgresql/data:delegated"
-      - "./sql/db_part1.sql:/docker-entrypoint-initdb.d/setup.sql:cached"
+      - "./sql/db_part1.sql:/docker-entrypoint-initdb.d/01_create_tables.sql:cached"
+      - "./sql/fill_tables_1.sql:/docker-entrypoint-initdb.d/02_fill_tables.sql:cached"
     networks:
       - mynetwork
 
@@ -46,7 +47,8 @@ services:
     depends_on: []
     volumes:
       - "db_part2:/var/lib/postgresql/data:delegated"
-      - "./sql/db_part2.sql:/docker-entrypoint-initdb.d/setup.sql:cached"
+      - "./sql/db_part2.sql:/docker-entrypoint-initdb.d/01_create_tables.sql:cached"
+      - "./sql/fill_tables_2.sql:/docker-entrypoint-initdb.d/02_fill_tables.sql:cached"
     networks:
       - mynetwork
 
@@ -57,4 +59,3 @@ volumes:
   db_primary:
   db_part1:
   db_part2:
-  db_part3:
