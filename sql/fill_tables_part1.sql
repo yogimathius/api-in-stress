@@ -1,5 +1,5 @@
 -- Seed data for warriors
-INSERT INTO warriors (id, name, dob) VALUES
+INSERT INTO warriors_1 (id, name, dob) VALUES
 ('5c96a418-6821-4f4d-b5e4-77b1b4b5074a', 'Aragorn Stormborn', '1975-03-03'), -- Aragorn from Lord of the Rings
 ('749c9710-1da7-48b4-8b9e-85a1f5a7c0cc', 'Xena Dragonheart', '1980-09-12'), -- Xena from Xena: Warrior Princess
 ('c65f7b77-f76d-4a37-ae43-62a140a96785', 'Conan Ironclad', '1982-07-06'), -- Conan the Barbarian
@@ -48,7 +48,7 @@ INSERT INTO warriors (id, name, dob) VALUES
 ('a3fc9a64-7e09-4297-b9a4-f40dc80d725e', 'Guan Yu', 'AD 160-08-14'), -- Guan Yu from Chinese history and folklore
 ('4d4e627d-7c05-4fbf-8606-e891d3316874', 'Hercules', '1250-10-12'), -- Hercules from Greek mythology
 ('46bbd76e-48e8-4bc2-9da8-d5eef8853c27', 'Joan of Arc', '1412-01-06'), -- Joan of Arc from history and legend
-('d101e161-8401-44d4-bc89-16cb7f87e7aa', 'Neo Matrix', '2144-11-02'), -- Neo from The Matrix
+('d101e161-8401-44d4-bc89-16cb7f87e7aa', 'Neo Matrix', '2144-11-02'); -- Neo from The Matrix
 
 
 
@@ -78,38 +78,44 @@ INSERT INTO skills_1 (name) VALUES
 ('Negotiation'),
 ('Persuasion');
 -- Seed data for warrior_skills for multiple warriors
-INSERT INTO warrior_skills (warrior_id, skill_id) VALUES
--- Aragorn Stormborn
-('5c96a418-6821-4f4d-b5e4-77b1b4b5074a', '1'), ('5c96a418-6821-4f4d-b5e4-77b1b4b5074a', '3'), ('5c96a418-6821-4f4d-b5e4-77b1b4b5074a', '5'), ('5c96a418-6821-4f4d-b5e4-77b1b4b5074a', '7'), ('5c96a418-6821-4f4d-b5e4-77b1b4b5074a', '8'), ('5c96a418-6821-4f4d-b5e4-77b1b4b5074a', '9'), ('5c96a418-6821-4f4d-b5e4-77b1b4b5074a', '12'), ('5c96a418-6821-4f4d-b5e4-77b1b4b5074a', '14'), ('5c96a418-6821-4f4d-b5e4-77b1b4b5074a', '16'), ('5c96a418-6821-4f4d-b5e4-77b1b4b5074a', '17'),
--- Xena Dragonheart
-('749c9710-1da7-48b4-8b9e-85a1f5a7c0cc', '2'), ('749c9710-1da7-48b4-8b9e-85a1f5a7c0cc', '4'), ('749c9710-1da7-48b4-8b9e-85a1f5a7c0cc', '6'), ('749c9710-1da7-48b4-8b9e-85a1f5a7c0cc', '10'), ('749c9710-1da7-48b4-8b9e-85a1f5a7c0cc', '11'), ('749c9710-1da7-48b4-8b9e-85a1f5a7c0cc', '13'), ('749c9710-1da7-48b4-8b9e-85a1f5a7c0cc', '15'), ('749c9710-1da7-48b4-8b9e-85a1f5a7c0cc', '18'), ('749c9710-1da7-48b4-8b9e-85a1f5a7c0cc', '19'), ('749c9710-1da7-48b4-8b9e-85a1f5a7c0cc', '20'),
--- Conan Ironclad
-('c65f7b77-f76d-4a37-ae43-62a140a96785', '1'), ('c65f7b77-f76d-4a37-ae43-62a140a96785', '3'), ('c65f7b77-f76d-4a37-ae43-62a140a96785', '5'), ('c65f7b77-f76d-4a37-ae43-62a140a96785', '7'), ('c65f7b77-f76d-4a37-ae43-62a140a96785', '8'), ('c65f7b77-f76d-4a37-ae43-62a140a96785', '9'), ('c65f7b77-f76d-4a37-ae43-62a140a96785', '12'), ('c65f7b77-f76d-4a37-ae43-62a140a96785', '14'), ('c65f7b77-f76d-4a37-ae43-62a140a96785', '16'), ('c65f7b77-f76d-4a37-ae43-62a140a96785', '17'),
--- Brienne Starshield
-('7d2f1441-c0b0-4a29-a32b-f2aa1676b32d', '2'), ('7d2f1441-c0b0-4a29-a32b-f2aa1676b32d', '4'), ('7d2f1441-c0b0-4a29-a32b-f2aa1676b32d', '6'), ('7d2f1441-c0b0-4a29-a32b-f2aa1676b32d', '10'), ('7d2f1441-c0b0-4a29-a32b-f2aa1676b32d', '11'), ('7d2f1441-c0b0-4a29-a32b-f2aa1676b32d', '13'), ('7d2f1441-c0b0-4a29-a32b-f2aa1676b32d', '15'), ('7d2f1441-c0b0-4a29-a32b-f2aa1676b32d', '18'), ('7d2f1441-c0b0-4a29-a32b-f2aa1676b32d', '19'), ('7d2f1441-c0b0-4a29-a32b-f2aa1676b32d', '20'),
--- Drizzt Darkblade
-('13b0db05-95dc-48b6-98b4-2aaac3ee37f3', '1'), ('13b0db05-95dc-48b6-98b4-2aaac3ee37f3', '3'), ('13b0db05-95dc-48b6-98b4-2aaac3ee37f3', '5'), ('13b0db05-95dc-48b6-98b4-2aaac3ee37f3', '7'), ('13b0db05-95dc-48b6-98b4-2aaac3ee37f3', '8'), ('13b0db05-95dc-48b6-98b4-2aaac3ee37f3', '9'), ('13b0db05-95dc-48b6-98b4-2aaac3ee37f3', '12'), ('13b0db05-95dc-48b6-98b4-2aaac3ee37f3', '14'), ('13b0db05-95dc-48b6-98b4-2aaac3ee37f3', '16'), ('13b0db05-95dc-48b6-98b4-2aaac3ee37f3', '17'),
--- Leia Skywatcher
-('f5dd4396-89c8-4486-99f5-964214d7e191', '2'), ('f5dd4396-89c8-4486-99f5-964214d7e191', '4'), ('f5dd4396-89c8-4486-99f5-964214d7e191', '6'), ('f5dd4396-89c8-4486-99f5-964214d7e191', '10'), ('f5dd4396-89c8-4486-99f5-964214d7e191', '11'), ('f5dd4396-89c8-4486-99f5-964214d7e191', '13'), ('f5dd4396-89c8-4486-99f5-964214d7e191', '15'), ('f5dd4396-89c8-4486-99f5-964214d7e191', '18'), ('f5dd4396-89c8-4486-99f5-964214d7e191', '19'), ('f5dd4396-89c8-4486-99f5-964214d7e191', '20'),
--- Geralt Witchslayer
-('aeb2004e-53ff-4b0e-bfc7-5827e47b1790', '1'), ('aeb2004e-53ff-4b0e-bfc7-5827e47b1790', '3'), ('aeb2004e-53ff-4b0e-bfc7-5827e47b1790', '5'), ('aeb2004e-53ff-4b0e-bfc7-5827e47b1790', '7'), ('aeb2004e-53ff-4b0e-bfc7-5827e47b1790', '8'), ('aeb2004e-53ff-4b0e-bfc7-5827e47b1790', '9'), ('aeb2004e-53ff-4b0e-bfc7-5827e47b1790', '12'), ('aeb2004e-53ff-4b0e-bfc7-5827e47b1790', '14'), ('aeb2004e-53ff-4b0e-bfc7-5827e47b1790', '16'), ('aeb2004e-53ff-4b0e-bfc7-5827e47b1790', '17'),
--- Buffy Shadowslayer
-('04b07a49-c28d-4a4d-9260-31f5d2f30bc2', '2'), ('04b07a49-c28d-4a4d-9260-31f5d2f30bc2', '4'), ('04b07a49-c28d-4a4d-9260-31f5d2f30bc2', '6'), ('04b07a49-c28d-4a4d-9260-31f5d2f30bc2', '10'), ('04b07a49-c28d-4a4d-9260-31f5d2f30bc2', '11'), ('04b07a49-c28d-4a4d-9260-31f5d2f30bc2', '13'), ('04b07a49-c28d-4a4d-9260-31f5d2f30bc2', '15'), ('04b07a49-c28d-4a4d-9260-31f5d2f30bc2', '18'), ('04b07a49-c28d-4a4d-9260-31f5d2f30bc2', '19'), ('04b07a49-c28d-4a4d-9260-31f5d2f30bc2', '20'),
--- Inigo Montoya
-('8331fc5e-4e2a-45d1-965d-e36d1b4fd015', '1'), ('8331fc5e-4e2a-45d1-965d-e36d1b4fd015', '3'), ('8331fc5e-4e2a-45d1-965d-e36d1b4fd015', '5'), ('8331fc5e-4e2a-45d1-965d-e36d1b4fd015', '7'), ('8331fc5e-4e2a-45d1-965d-e36d1b4fd015', '8'), ('8331fc5e-4e2a-45d1-965d-e36d1b4fd015', '9'), ('8331fc5e-4e2a-45d1-965d-e36d1b4fd015', '12'), ('8331fc5e-4e2a-45d1-965d-e36d1b4fd015', '14'), ('8331fc5e-4e2a-45d1-965d-e36d1b4fd015', '16'), ('8331fc5e-4e2a-45d1-965d-e36d1b4fd015', '17'),
--- Alice Nightingale
-('70609d2a-1d64-452f-a9eb-47a8af5f788b', '2'), ('70609d2a-1d64-452f-a9eb-47a8af5f788b', '4'), ('70609d2a-1d64-452f-a9eb-47a8af5f788b', '6'), ('70609d2a-1d64-452f-a9eb-47a8af5f788b', '10'), ('70609d2a-1d64-452f-a9eb-47a8af5f788b', '11'), ('70609d2a-1d64-452f-a9eb-47a8af5f788b', '13'), ('70609d2a-1d64-452f-a9eb-47a8af5f788b', '15'), ('70609d2a-1d64-452f-a9eb-47a8af5f788b', '18'), ('70609d2a-1d64-452f-a9eb-47a8af5f788b', '19'), ('70609d2a-1d64-452f-a9eb-47a8af5f788b', '20'),
--- Jon Snow
-('d60cf5d2-51b3-476f-ba1a-056cf4a076f8', '1'), ('d60cf5d2-51b3-476f-ba1a-056cf4a076f8', '3'), ('d60cf5d2-51b3-476f-ba1a-056cf4a076f8', '5'), ('d60cf5d2-51b3-476f-ba1a-056cf4a076f8', '7'), ('d60cf5d2-51b3-476f-ba1a-056cf4a076f8', '8'), ('d60cf5d2-51b3-476f-ba1a-056cf4a076f8', '9'), ('d60cf5d2-51b3-476f-ba1a-056cf4a076f8', '12'), ('d60cf5d2-51b3-476f-ba1a-056cf4a076f8', '14'), ('d60cf5d2-51b3-476f-ba1a-056cf4a076f8', '16'), ('d60cf5d2-51b3-476f-ba1a-056cf4a076f8', '17'),
--- Ellen Ripley
-('35b5b20f-3d22-4ff7-8d8a-12119b1bf56e', '2'), ('35b5b20f-3d22-4ff7-8d8a-12119b1bf56e', '4'), ('35b5b20f-3d22-4ff7-8d8a-12119b1bf56e', '6'), ('35b5b20f-3d22-4ff7-8d8a-12119b1bf56e', '10'), ('35b5b20f-3d22-4ff7-8d8a-12119b1bf56e', '11'), ('35b5b20f-3d22-4ff7-8d8a-12119b1bf56e', '13'), ('35b5b20f-3d22-4ff7-8d8a-12119b1bf56e', '15'), ('35b5b20f-3d22-4ff7-8d8a-12119b1bf56e', '18'), ('35b5b20f-3d22-4ff7-8d8a-12119b1bf56e', '19'), ('35b5b20f-3d22-4ff7-8d8a-12119b1bf56e', '20'),
--- Maximus Decimus Meridius
-('bb0734bf-c7b3-4055-a619-7a6496f29069', '1'), ('bb0734bf-c7b3-4055-a619-7a6496f29069', '3'), ('bb0734bf-c7b3-4055-a619-7a6496f29069', '5'), ('bb0734bf-c7b3-4055-a619-7a6496f29069', '7'), ('bb0734bf-c7b3-4055-a619-7a6496f29069', '8'), ('bb0734bf-c7b3-4055-a619-7a6496f29069', '9'), ('bb0734bf-c7b3-4055-a619-7a6496f29069', '12'), ('bb0734bf-c7b3-4055-a619-7a6496f29069', '14'), ('bb0734bf-c7b3-4055-a619-7a6496f29069', '16'), ('bb0734bf-c7b3-4055-a619-7a6496f29069', '17'),
--- Katniss Everdeen
-('98f501b8-0424-4f54-b06e-119f7fb46f6b', '2'), ('98f501b8-0424-4f54-b06e-119f7fb46f6b', '4'), ('98f501b8-0424-4f54-b06e-119f7fb46f6b', '6'), ('98f501b8-0424-4f54-b06e-119f7fb46f6b', '10'), ('98f501b8-0424-4f54-b06e-119f7fb46f6b', '11'), ('98f501b8-0424-4f54-b06e-119f7fb46f6b', '13'), ('98f501b8-0424-4f54-b06e-119f7fb46f6b', '15'), ('98f501b8-0424-4f54-b06e-119f7fb46f6b', '18'), ('98f501b8-0424-4f54-b06e-119f7fb46f6b', '19'), ('98f501b8-0424-4f54-b06e-119f7fb46f6b', '20'),
--- Legolas Greenleaf
-('525f8bae-c08a-4626-b4b7-c5681b8b0f40', '1'), ('525f8bae-c08a-4626-b4b7-c5681b8b0f40', '3'), ('525f8bae-c08a-4626-b4b7-c5681b8b0f40', '5'), ('525f8bae-c08a-4626-b4b7-c5681b8b0f40', '7'), ('525f8bae-c08a-4626-b4b7-c5681b8b0f40', '8'), ('525f8bae-c08a-4626-b4b7-c5681b8b0f40', '9'), ('525f8bae-c08a-4626-b4b7-c5681b8b0f40', '12'), ('525f8bae-c08a-4626-b4b7-c5681b8b0f40', '14'), ('525f8bae-c08a-4626-b4b7-c5681b8b0f40', '16'), ('525f8bae-c08a-4626-b4b7-c5681b8b0f40', '17'),
--- Beatrix Kiddo
-('0e1bb464-14cb-4651-aeb1-b7a6661d01f2', '2'), ('0e1bb464-14cb-4651-aeb1-b7a6661d01f2', '4'), ('0e1bb464-14cb-4651-aeb1-b7a6661d01f2', '6'), ('0e1bb464-14cb-4651-aeb1-b7a6661d01f2', '10'), ('0e1bb464-14cb-4651-aeb1-b7a6661d01f2', '11'), ('0e1bb464-14cb-4651-aeb1-b7a6661d01f2', '13'), ('0e1bb464-14cb-4651-aeb1-b7a6661d01f2', '15'), ('0e1bb464-14cb-4651-aeb1-b7a6661d01f2', '18'), ('0e1bb464-14cb-4651-aeb1-b7a6661d01f2', '19'), ('0e1bb464-14cb-4651-aeb1-b7a6661d01f2', '20'),
--- Hermione Granger
-('07fb3ab8-5c45-4f85-9353-0e9e7e2c693f', '1'), ('07fb3ab8-5c45-4f85-9353-0e9e7e2c693f', '3'), ('07fb3ab8-5c45-4f85-9353-0e9e7e2c693f', '5'), ('07fb3ab8-5c45-4f85-9353-0e9e7e2c693f', '7'), ('07fb3ab8-5c45-4f85-9353-0e9e7e2c693f', '8'), ('07fb3ab8-5c45-4f85-9353-0e9e7e2c693f', '9'), ('07fb3ab8-5c45-4f85-9353-0e9e7e2c693f', '12'), ('07fb3ab8-5c45-4f85-9353-0e9e7e2c693f', '14'), ('07fb3ab8-5c45-4f85-9353-0e9e7e2c693f', '16'), ('07fb3ab8-5c45-4f85-9353-0e9e7e2c693f', '17');
+-- Seed data for warrior_skills
+-- Continued seed data for warrior_skills_1
+INSERT INTO warrior_skills_1 (warrior_id, skill_id) VALUES
+('19a4607e-0dab-4b61-af9a-360f30d4a6c3', 10), -- Alice - Marksmanship
+('b4d6c4e3-67c4-49b5-b0e7-ecf956769527', 5), -- Jon Snow - Leadership
+('d1f1267f-0167-4679-aa15-b54d1bc8da6f', 6), -- Ellen Ripley - Survival
+('8c48551e-aa25-43ae-96b1-8b96177532b2', 4), -- Maximus - Tactics
+('13bf2453-dc78-47b3-ae05-7b1edc82b65f', 2), -- Katniss - Archery
+('ef5c0867-b303-4b39-a01d-2c7611f42353', 2), -- Legolas - Archery
+('3e76e845-af0a-4887-87ff-501b96d64686', 1), -- Beatrix - Swordsmanship
+('b2b76d4b-eb5d-4ef2-86bb-02d5f6952fcb', 9), -- Luke Skywalker - Hand-to-hand Combat
+('b90d5b3d-f6c9-4f51-b8f7-9b943d5ad2ab', 8), -- Indiana Jones - Navigation
+('5d8c3c25-3150-4a9b-8924-0a7a487fb01a', 10), -- Mulan - Marksmanship
+('c67cd118-6b40-46f0-98ff-dbc78b0ad42a', 10), -- Neo - Marksmanship
+('8c1dd2ad-5f7e-4af7-8217-601e0c50da0d', 2), -- Robin Hood - Archery
+('d8393bb3-0b4a-4a15-b61f-17b13eeb5a67', 1), -- Achilles - Swordsmanship
+('bded00c8-9462-4de8-8fb5-ff8d25d48c4a', 5), -- Éowyn - Leadership
+('f53df9d1-30c2-426a-bce2-d007eb5ab617', 7), -- Jack Sparrow - Alchemy
+('2a3d15b9-46d8-4b33-8f58-891cfb78d56c', 3), -- William Wallace - Magic
+('56041825-d02b-4f6c-a70a-f7c7b9d0b48f', 5), -- Furiosa - Leadership
+('6c5c14c5-6d92-4f35-a3b2-f2e7da29ebf8', 11), -- Han Solo - Sorcery
+('2bfb7995-0347-45e4-b637-5dd3b88c1c71', 12), -- Gandalf - Diplomacy
+('ef17f715-43f4-4d81-9e6c-c738090587eb', 13), -- Hermione - Navigation
+('67f5439e-6aa5-4a9c-81bb-7eb7a75e7505', 5), -- Thorin - Leadership
+('9da64cd3-4bb2-4aa1-ba90-ef57d4dd94d7', 1), -- Wonder Woman - Swordsmanship
+('4b9aa1b4-5419-4c23-b319-256f0cf6e75c', 22), -- Beowulf - Persuasion
+('c23a6910-6df1-46c5-95e2-0f8ccde7f2dd', 2), -- Merida - Archery
+('61fcf8d1-961b-457e-84ad-9406e6738b07', 21), -- Captain America - Empathy
+('88df5b6c-cd47-4857-8bf3-7798b22f3192', 1), -- Samurai Jack - Swordsmanship
+('b8b320f2-29ab-4566-8f19-bdf5e15a468a', 22), -- Sir Lancelot - Persuasion
+('b00c2bb9-18c0-40b4-bc8b-14d9c7b58db2', 4), -- Galadriel - Tactics
+('53b0f8c9-0622-41e5-a6db-2c6a6be834fa', 1), -- X-23 - Swordsmanship
+('9f982163-9cb5-4c68-85f8-78678811f238', 9), -- Attila the Hun - Hand-to-hand Combat
+('4ffad84b-fc2a-4d3c-a9bb-16b0797dd08e', 2), -- Aloy - Archery
+('755a2a81-25e3-4f80-97c8-34c5de3649a7', 23), -- Leonidas - Healing
+('e769c46a-25c4-4fb0-b6f0-4f584ad9e38a', 1), -- Sir Gawain - Swordsmanship
+('5a94412d-1e16-47d3-8391-b0a1a64f32d7', 10), -- Kenshin - Marksmanship
+('6f4fd5c4-0e0a-40dc-aa16-01eb8dc070d1', 22), -- Lara Croft - Persuasion
+('a3fc9a64-7e09-4297-b9a4-f40dc80d725e', 3), -- Guan Yu - Magic
+('4d4e627d-7c05-4fbf-8606-e891d3316874', 20), -- Hercules - Acrobatics
+('46bbd76e-48e8-4bc2-9da8-d5eef8853c27', 5); -- Joan of Arc - Leadership

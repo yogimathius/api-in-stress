@@ -1,5 +1,5 @@
 -- Seed data for warriors
-INSERT INTO warriors_1 (id, name, dob) VALUES
+INSERT INTO warriors_2 (id, name, dob) VALUES
 ('5ef8eb91-6287-47a6-bc29-5a39cc27b110', 'Desmond Doss', '1919-02-07'), -- Desmond Doss, real-life hero and conscientious objector in World War II
 ('1b304cec-6df6-4722-8638-8dd4280da77d', 'Ghandi', '1869-10-02'), -- Mahatma Gandhi, leader of the Indian independence movement and advocate for nonviolent resistance
 ('268fbf42-b13d-4d6b-bef9-2b2738b82e8c', 'Aragorn Stormborn II', '2020-11-11'), -- Fictional successor to Aragorn from Lord of the Rings
@@ -48,7 +48,7 @@ INSERT INTO skills_2 (name) VALUES
 ('Persuasion');
 
 -- Seed data for warrior_skills
-INSERT INTO warrior_skills_1 (warrior_id, skill_id) VALUES
+INSERT INTO warrior_skills_2 (warrior_id, skill_id) VALUES
 -- Desmond Doss
 ('5ef8eb91-6287-47a6-bc29-5a39cc27b110', 15), ('5ef8eb91-6287-47a6-bc29-5a39cc27b110', 18), ('5ef8eb91-6287-47a6-bc29-5a39cc27b110', 20),
 -- Ghandi
