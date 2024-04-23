@@ -22,11 +22,11 @@ pub async fn create_warrior(
     let mut headers = HeaderMap::new();
     headers.insert("content-type", "application/json".parse().unwrap());
 
-    if (warrior.skills.len() == 0 || warrior.skills.len() > 20) {
+    if warrior.skills.len() == 0 || warrior.skills.len() > 20 {
         return (StatusCode::BAD_REQUEST, headers, "Skills cannot be empty");
     }
 
-    if (warrior.skills.iter().any(|skill| skill.len() > 250)) {
+    if warrior.skills.iter().any(|skill| skill.len() > 250) {
         return (StatusCode::BAD_REQUEST, headers, "Skill name cannot be more than 250 characters");
     }
 
