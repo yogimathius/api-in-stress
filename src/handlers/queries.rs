@@ -15,4 +15,16 @@ SELECT warriors.*,
         INNER JOIN warrior_skills ON skills.id = warrior_skills.skill_id
         WHERE warrior_skills.warrior_id = warriors.id
     ) AS fight_skills
-FROM warriors  LIMIT 50;"#;
+FROM warriors  
+WHERE 
+    warriors.name ILIKE '%' || $1 || '%' OR
+    warriors.dob ILIKE '%' || $1 || '%' OR
+    EXISTS (
+        SELECT 1
+        FROM skills
+        INNER JOIN warrior_skills ON skills.id = warrior_skills.skill_id
+        WHERE 
+            warrior_skills.warrior_id = warriors.id AND
+            skills.name ILIKE '%' || $1 || '%'
+    )
+LIMIT 50;"#;

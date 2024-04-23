@@ -14,8 +14,9 @@ pub async fn search_warriors(
     State(state): State<AppState>,
     Query(params): Query<HashMap<String, String>>
 ) -> Result<Json<Vec<Warrior>>, (StatusCode, String)> {
-    let query_key = format!("warriors:{:?}", params);
-
+    let query_key = format!("warriors:{:?}", params.get("t"));
+    println!("params: {:?}", params.get("t"));
+    
     let mut redis_conn: bb8::PooledConnection<'_, bb8_redis::RedisConnectionManager> = state.redis_store.get().await.unwrap();
     if let Ok(warriors_json) = redis_conn.get::<_, String>(&query_key).await {
         let warriors: Vec<Warrior> = serde_json::from_str(&warriors_json).unwrap();
@@ -24,6 +25,7 @@ pub async fn search_warriors(
     }        
 
     let warriors:Vec<Warrior>  = sqlx::query_as(SEARCH_WARRIORS)
+        .bind(params.get("t"))
         .fetch_all(&state.primary_db_store)
         .await
         .map_err(|err| internal_error(err))?;
