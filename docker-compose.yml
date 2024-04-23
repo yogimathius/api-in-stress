@@ -3,6 +3,8 @@ version: "3"
 services:
   api-gateway-1:
     build: .
+    deploy:
+      replicas: 2
     environment:
       DATABASE_URL: "postgres://postgres:pass123@db_part1:5432/warriors"
       SHARD: 1
@@ -13,6 +15,8 @@ services:
 
   api-gateway-2:
     build: .
+    deploy:
+      replicas: 2
     environment:
       DATABASE_URL: "postgres://postgres:pass123@db_part2:5432/warriors"
       SHARD: 2
