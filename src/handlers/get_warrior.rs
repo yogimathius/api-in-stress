@@ -20,23 +20,26 @@ pub async fn get_warrior(
 
     if let Ok(user_id) = redis_conn.get::<_, String>(&user_id.clone()).await {
         let warrior: Warrior = serde_json::from_str(&user_id).unwrap();
-        // report_time(start, "get_warrior from cache");
 
         return Ok(Json(warrior));
     }        
 
-    let warrior: Warrior = sqlx::query_as(&GET_WARRIOR)
+    let result: Option<Warrior> = sqlx::query_as(&GET_WARRIOR)
         .bind(user_id)
-        .fetch_one(&state.primary_db_store)
+        .fetch_optional(&state.primary_db_store)
         .await
         .map_err(|err| internal_error(err))?;
 
-    let warrior_json: String = serde_json::to_string(&warrior).unwrap();
-    let _ = redis_conn.set::<_, String, ()>(user_id_clone, warrior_json).await.map_err(|err: redis::RedisError| {
-        eprintln!("Failed to cache warrior: {:?}", err);
-        StatusCode::INTERNAL_SERVER_ERROR
-    });
-    // println!("Warrior cached successfully");
 
-    Ok(Json(warrior))
+    match result {
+        Some(warrior) => {
+            let warrior_json: String = serde_json::to_string(&warrior).unwrap();
+            let _ = redis_conn.set::<_, String, ()>(user_id_clone, warrior_json).await.map_err(|err: redis::RedisError| {
+                eprintln!("Failed to cache warrior: {:?}", err);
+                StatusCode::INTERNAL_SERVER_ERROR
+            });
+            Ok(Json(warrior))
+        },
+        None => Err((StatusCode::NOT_FOUND, "Warrior not found".to_string()))
+    }
 }
