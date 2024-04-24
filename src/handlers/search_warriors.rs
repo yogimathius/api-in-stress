@@ -1,7 +1,7 @@
 use crate::app_state::AppState;
 use serde_json;
 use axum::{
-    extract::{Query, State}, http::StatusCode, Json
+    extract::{Query, State}, http::{HeaderMap, StatusCode}, response::IntoResponse, Json
 };
 use redis::AsyncCommands;
 
@@ -13,22 +13,28 @@ use std::collections::HashMap;
 pub async fn search_warriors(
     State(state): State<AppState>,
     Query(params): Query<HashMap<String, String>>
-) -> Result<Json<Vec<Warrior>>, (StatusCode, String)> {
+) -> impl IntoResponse {
     let query_key = format!("warriors:{:?}", params.get("t"));
-    println!("params: {:?}", params.get("t"));
-    
+    let mut headers = HeaderMap::new();
+    headers.insert("content-type", "application/json".parse().unwrap());
+    let no_warriors: Vec<Warrior> = vec![];
+    if params.get("t").is_none() {
+        return (StatusCode::BAD_REQUEST, headers, Json(no_warriors));
+    }
+
     let mut redis_conn: bb8::PooledConnection<'_, bb8_redis::RedisConnectionManager> = state.redis_store.get().await.unwrap();
     if let Ok(warriors_json) = redis_conn.get::<_, String>(&query_key).await {
         let warriors: Vec<Warrior> = serde_json::from_str(&warriors_json).unwrap();
 
-        return Ok(Json(warriors));
+        return (StatusCode::OK, headers, Json(warriors));
     }        
 
     let warriors:Vec<Warrior>  = sqlx::query_as(SEARCH_WARRIORS)
         .bind(params.get("t"))
         .fetch_all(&state.primary_db_store)
         .await
-        .map_err(|err| internal_error(err))?;
+        .map_err(|err| internal_error(err))
+        .unwrap();
     
 
     let warriors_json = serde_json::to_string(&warriors).unwrap();
@@ -36,8 +42,6 @@ pub async fn search_warriors(
         eprintln!("Failed to cache warriors: {:?}", err);
         StatusCode::INTERNAL_SERVER_ERROR
     });
-    println!("Warriors cached successfully");
 
-    // report_time(start, "search_warriors");
-    Ok(Json(warriors))
+    (StatusCode::OK, headers, Json(warriors))
 }
