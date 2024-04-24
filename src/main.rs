@@ -5,15 +5,7 @@ use hyper::body::Incoming;
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server;
 use tower::Service;
-
-mod database;
-mod primary_database;
-mod handlers;
-mod models;
-mod app;
-mod redis;
-mod app_state;
-mod utilities;
+use api_in_stress::app;
 
 async fn handle_connection(socket: tokio::net::TcpStream, app: axum::Router) {
     let socket = TokioIo::new(socket);
