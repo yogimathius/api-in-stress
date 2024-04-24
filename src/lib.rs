@@ -6,3 +6,4 @@ pub mod app;
 pub mod redis;
 pub mod app_state;
 pub mod utilities;
+pub mod telemetry;

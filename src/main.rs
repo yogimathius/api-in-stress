@@ -1,11 +1,11 @@
 use axum::extract::Request;
 use tokio::net::TcpListener;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use hyper::body::Incoming;
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server;
 use tower::Service;
 use api_in_stress::app;
+use api_in_stress::telemetry::{get_subscriber, init_subscriber};
 
 async fn handle_connection(socket: tokio::net::TcpStream, app: axum::Router) {
     let socket = TokioIo::new(socket);
@@ -34,13 +34,8 @@ async fn serve(listener: TcpListener, app: axum::Router) {
 
 #[tokio::main]
 async fn main() {
-    tracing_subscriber::registry()
-        .with(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "example_diesel_async_postgres=debug".into()),
-        )
-        .with(tracing_subscriber::fmt::layer())
-        .init();
+    let subscriber = get_subscriber("api_in_stress".into(), "info".into(), std::io::stdout);
+    init_subscriber(subscriber);
 
     let app = app::create_app().await;
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
