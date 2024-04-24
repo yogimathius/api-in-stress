@@ -4,7 +4,7 @@ use hyper::body::Incoming;
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server;
 use tower::Service;
-use api_in_stress::app;
+use api_in_stress::app::Application as app;
 use api_in_stress::telemetry::{get_subscriber, init_subscriber};
 
 async fn handle_connection(socket: tokio::net::TcpStream, app: axum::Router) {
