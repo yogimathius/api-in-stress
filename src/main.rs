@@ -4,8 +4,33 @@ use hyper::body::Incoming;
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server;
 use tower::Service;
+
 use api_in_stress::app::Application as app;
 use api_in_stress::telemetry::{get_subscriber, init_subscriber};
+
+#[tokio::main]
+async fn main() {
+    let subscriber = get_subscriber("api_in_stress".into(), "info".into(), std::io::stdout);
+
+    init_subscriber(subscriber);
+    println!("Starting server...");
+    // let configuration: api_in_stress::configuration::Settings = get_configuration().expect("Failed to read configuration.");
+    // println!("Loaded configuration: {:?}", configuration);
+    let app = app::create_app().await;
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    println!("Listening on: {}", listener.local_addr().unwrap());
+
+    serve(listener, app).await;
+}
+
+async fn serve(listener: TcpListener, app: axum::Router) {
+    println!("Listening on: {}", listener.local_addr().unwrap());
+
+    loop {
+        let (socket, _remote_addr) = listener.accept().await.unwrap();
+        tokio::spawn(handle_connection(socket, app.clone()));
+    }
+}
 
 async fn handle_connection(socket: tokio::net::TcpStream, app: axum::Router) {
     let socket = TokioIo::new(socket);
@@ -21,25 +46,4 @@ async fn handle_connection(socket: tokio::net::TcpStream, app: axum::Router) {
     {
         eprintln!("failed to serve connection: {}", err);
     }
-}
-
-async fn serve(listener: TcpListener, app: axum::Router) {
-    println!("Listening on: {}", listener.local_addr().unwrap());
-
-    loop {
-        let (socket, _remote_addr) = listener.accept().await.unwrap();
-        tokio::spawn(handle_connection(socket, app.clone()));
-    }
-}
-
-#[tokio::main]
-async fn main() {
-    let subscriber = get_subscriber("api_in_stress".into(), "info".into(), std::io::stdout);
-    init_subscriber(subscriber);
-
-    let app = app::create_app().await;
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    println!("Listening on: {}", listener.local_addr().unwrap());
-
-    serve(listener, app).await;
 }
