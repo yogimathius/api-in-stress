@@ -1,11 +1,12 @@
-version: "3"
+version: "3.7"
 
 services:
-  postgres:
+  postgres: &postgres
     image: postgres:latest
-    container_name: postgres
-    ports:
-      - "6500:5432"
+    restart: always
+    depends_on:
+      - db_part1
+      - db_part2
     user: postgres
     environment:
       - PG_DB=warriors
@@ -15,38 +16,46 @@ services:
       - PGUSER=postgres
       - PG_PASSWORD=pass123
       - PGDATA=/var/lib/postgresql/data/some_name/
+    ports:
+      - 5432
+    volumes:
+      - "db_primary:/var/lib/postgresql/data:delegated"
+      - "./sql/db_primary.sql:/docker-entrypoint-initdb.d/setup.sql:cached"
+    networks:
+      - mynetwork
+    command: postgres -c listen_addresses='*' -c 'max_connections=1000'
+    env_file:
+      - ./.env
     healthcheck:
       test: ["CMD", "pg_isready", "-h", "localhost", "-p", "5432"]
       interval: 10s
       timeout: 5s
       retries: 5
-    env_file:
-      - ./.env
+
+  db_part1:
+    <<: *postgres
+    depends_on: []
+    volumes:
+      - "db_part1:/var/lib/postgresql/data:delegated"
+      - "./sql/db_part1.sql:/docker-entrypoint-initdb.d/01_create_tables.sql:cached"
+      - "./sql/fill_tables_part1.sql:/docker-entrypoint-initdb.d/01_fill_tables.sql"
     networks:
       - mynetwork
-    command: |
-      postgres
-        -c listen_addresses='*'
-        -c 'max_connections=1500'
-        -c shared_preload_libraries=pg_stat_statements
-        -c pg_stat_statements.track=all
-        -c shared_buffers=512MB
-        -c effective_cache_size=16GB
-        -c work_mem=32MB
-        -c maintenance_work_mem=256MB
-        -c min_wal_size=256MB
-        -c max_wal_size=4GB
-        -c checkpoint_completion_target=1.0
-        -c random_page_cost=1.0
-        -c wal_buffers=32MB
-        -c default_statistics_target=100
+
+  db_part2:
+    <<: *postgres
+    depends_on: []
     volumes:
-      - "postgres:/var/lib/postgresql/data:delegated"
-      - "./sql/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql"
-      - "./sql/fill_tables.sql:/docker-entrypoint-initdb.d/fill_tables.sql"
+      - "db_part2:/var/lib/postgresql/data:delegated"
+      - "./sql/db_part2.sql:/docker-entrypoint-initdb.d/01_create_tables.sql:cached"
+      - "./sql/fill_tables_part2.sql:/docker-entrypoint-initdb.d/02_fill_tables.sql"
+    networks:
+      - mynetwork
 
 networks:
   mynetwork:
 
 volumes:
-  postgres:
+  db_primary:
+  db_part1:
+  db_part2:
