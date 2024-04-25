@@ -17,7 +17,7 @@ pub struct Application {
 }
 
 impl Application {
-    pub async fn create_app() -> Router {
+    pub async fn new() -> Router {
         let pool = create_pool().await;
         let primary_pool = create_primary_pool().await;
         let redis_store = RedisDatabase::new().await;
