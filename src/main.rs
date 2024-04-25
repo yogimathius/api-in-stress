@@ -5,7 +5,7 @@ use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server;
 use tower::Service;
 
-use api_in_stress::app::Application as app;
+use api_in_stress::app::Application;
 use api_in_stress::telemetry::{get_subscriber, init_subscriber};
 
 #[tokio::main]
@@ -16,7 +16,7 @@ async fn main() {
     println!("Starting server...");
     // let configuration: api_in_stress::configuration::Settings = get_configuration().expect("Failed to read configuration.");
     // println!("Loaded configuration: {:?}", configuration);
-    let app = app::create_app().await;
+    let app = Application::new().await;
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
     println!("Listening on: {}", listener.local_addr().unwrap());
 
