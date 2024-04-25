@@ -1,15 +1,13 @@
 # syntax=docker/dockerfile:1
 
 ARG RUST_VERSION=1.77.1
-ARG APP_NAME=api-in-stress
+ARG APP_NAME=api_in_stress
 
 FROM rust:${RUST_VERSION}-alpine AS build
 ARG APP_NAME
 WORKDIR /app
 
 RUN apk add --no-cache clang lld musl-dev git openssl-dev
-
-RUN cargo install cargo-watch
 
 # Copy the files to the Docker image
 COPY ./ ./
@@ -36,7 +34,6 @@ RUN adduser \
     --uid "${UID}" \
     appuser
 USER appuser
-ENV SET DATABASE_URL=postgres://postgres:password@localhost:5432/diesel_demo
 
 COPY --from=build /bin/server /bin/
 

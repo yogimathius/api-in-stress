@@ -2,7 +2,9 @@ version: "3"
 
 services:
   api-gateway-1:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     deploy:
       replicas: 2
     environment:
@@ -15,7 +17,9 @@ services:
       - mynetwork
 
   api-gateway-2:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     deploy:
       replicas: 2
     environment:
