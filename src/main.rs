@@ -6,13 +6,13 @@ use hyper_util::server;
 use tower::Service;
 
 use api_in_stress::app::Application;
-use api_in_stress::telemetry::{get_subscriber, init_subscriber};
+// use api_in_stress::telemetry::{get_subscriber, init_subscriber};
 
 #[tokio::main]
 async fn main() {
-    let subscriber = get_subscriber("api_in_stress".into(), "info".into(), std::io::stdout);
+    // let subscriber = get_subscriber("api_in_stress".into(), "info".into(), std::io::stdout);
 
-    init_subscriber(subscriber);
+    // init_subscriber(subscriber);
     println!("Starting server...");
     // let configuration: api_in_stress::configuration::Settings = get_configuration().expect("Failed to read configuration.");
     // println!("Loaded configuration: {:?}", configuration);
