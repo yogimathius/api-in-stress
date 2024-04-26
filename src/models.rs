@@ -1,7 +1,7 @@
 use sqlx::{Decode, Encode, FromRow};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Clone)]
 pub struct NewWarrior {
     pub name: String,
     pub dob: String,
