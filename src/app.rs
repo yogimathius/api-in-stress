@@ -11,6 +11,7 @@ use crate::database::create_pool;
 use crate::primary_database::create_primary_pool;
 use crate::redis::RedisDatabase;
 use crate::utilities::handle_timeout_error;
+use crate::valid_fight_skills::ValidFightSkills;
 
 pub struct Application {
     port: u16,
@@ -21,11 +22,13 @@ impl Application {
         let pool = create_pool().await;
         let primary_pool = create_primary_pool().await;
         let redis_store = RedisDatabase::new().await;
+        let valid_skills = ValidFightSkills::new();
 
         let app_state = AppState {
             db_store: pool,
             primary_db_store: primary_pool,
             redis_store: redis_store,
+            valid_skills: valid_skills,
         };
 
         Router::new()

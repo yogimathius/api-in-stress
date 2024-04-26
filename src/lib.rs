@@ -8,3 +8,4 @@ pub mod app_state;
 pub mod utilities;
 pub mod telemetry;
 pub mod configuration;
+pub mod valid_fight_skills;

@@ -22,8 +22,8 @@ pub async fn create_warrior(
     let mut headers = HeaderMap::new();
     headers.insert("content-type", "application/json".parse().unwrap());
 
-    if warrior.skills.len() == 0 || warrior.skills.len() > 20 {
-        return (StatusCode::BAD_REQUEST, headers, "Skills cannot be empty");
+    if state.valid_skills.are_valid_skills(&warrior.skills) == false {
+        return (StatusCode::BAD_REQUEST, headers, "Invalid skill name(s)");
     }
 
     if warrior.skills.iter().any(|skill| skill.len() > 250) {
@@ -57,7 +57,9 @@ pub async fn create_warrior(
         .await
         .map_err(|err| internal_error(err))
         .unwrap();
+    let warrior_json: String = serde_json::to_string(&warrior).unwrap();
 
+    state.redis_store.set(&warrior_id.0, warrior_json).await;
     let location: String = format!("/name/{:?}", warrior_id.0);
     headers.insert("location", location.parse().unwrap());
 
