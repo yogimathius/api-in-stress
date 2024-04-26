@@ -1,5 +1,4 @@
 pub mod database;
-pub mod primary_database;
 pub mod handlers;
 pub mod models;
 pub mod app;

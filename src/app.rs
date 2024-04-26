@@ -7,26 +7,24 @@ use axum::{
 use std::time::Duration;
 use tower::{timeout::TimeoutLayer, ServiceBuilder};
 use crate::handlers::{create_warrior::create_warrior, get_warrior::get_warrior, search_warriors::search_warriors, count_warriors::count_warriors};
-use crate::database::create_pool;
-use crate::primary_database::create_primary_pool;
+use crate::database::Database;
 use crate::redis::RedisDatabase;
 use crate::utilities::handle_timeout_error;
 use crate::valid_fight_skills::ValidFightSkills;
 
 pub struct Application {
-    port: u16,
+    // port: u16,
 }
 
 impl Application {
     pub async fn new() -> Router {
-        let pool = create_pool().await;
-        let primary_pool = create_primary_pool().await;
+        let database = Database::new().await;
         let redis_store = RedisDatabase::new().await;
         let valid_skills = ValidFightSkills::new();
 
         let app_state = AppState {
-            db_store: pool,
-            primary_db_store: primary_pool,
+            db_store: database.pool,
+            primary_db_store: database.primary_pool,
             redis_store: redis_store,
             valid_skills: valid_skills,
         };
