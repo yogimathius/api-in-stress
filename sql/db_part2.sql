@@ -20,5 +20,5 @@ CREATE TABLE IF NOT EXISTS warrior_skills_2 (
 );
 
 CREATE INDEX idx_skills_name ON skills_2 (name);
-CREATE INDEX idx_warrior_skills_warrior_id ON warrior_skills_s2 (warrior_id);
-CREATE INDEX idx_warrior_skills_skill_id ON warrior_skills_s2 (skill_id);
+CREATE INDEX idx_warrior_skills_warrior_id ON warrior_skills_2 (warrior_id);
+CREATE INDEX idx_warrior_skills_skill_id ON warrior_skills_2 (skill_id);
