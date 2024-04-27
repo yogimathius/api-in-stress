@@ -1,5 +1,4 @@
 pub mod database;
-pub mod primary_database;
 pub mod handlers;
 pub mod models;
 pub mod app;
@@ -8,3 +7,4 @@ pub mod app_state;
 pub mod utilities;
 pub mod telemetry;
 pub mod configuration;
+pub mod valid_fight_skills;
