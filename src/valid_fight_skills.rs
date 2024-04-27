@@ -26,6 +26,6 @@ impl ValidFightSkills {
     }
 
     pub fn are_valid_skills(&self, skills: &Vec<std::string::String>) -> bool {
-        skills.iter().all(|skill| self.skills.contains_key(skill)) && skills.len() > 0 && skills.len() <= 20
-    }    
+        !skills.is_empty() && skills.len() <= 20 && skills.iter().all(|skill| self.skills.contains_key(skill))
+    }
 }
