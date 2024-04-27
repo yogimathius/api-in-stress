@@ -8,7 +8,6 @@ use bb8_redis::bb8;
 #[derive(Clone)]
 pub struct RedisDatabase {
     redis_store: Pool<RedisConnectionManager>,
-
 }
 
 impl RedisDatabase {
@@ -35,8 +34,7 @@ impl RedisDatabase {
         let mut conn: bb8::PooledConnection<'_, bb8_redis::RedisConnectionManager> = self.redis_store.get().await.unwrap();
         match conn.get::<_, String>(key).await {
             Ok(value) => Some(value),
-            Err(err) => {
-                eprintln!("No value found in Redis: {:?}", err);
+            Err(_err) => {
                 None
             }
         }
