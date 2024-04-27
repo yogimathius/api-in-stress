@@ -60,7 +60,7 @@ pub async fn create_warrior(
     let warrior_json: String = serde_json::to_string(&warrior).unwrap();
 
     state.redis_store.set(&warrior_id.0, warrior_json).await;
-    let location: String = format!("/name/{:?}", warrior_id.0);
+    let location: String = format!("/warrior/{:?}", warrior_id.0);
     headers.insert("location", location.parse().unwrap());
 
     // report_time(start, "create_warrior");
