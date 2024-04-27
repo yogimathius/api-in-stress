@@ -37,33 +37,14 @@ This project is dockerized with one Dockerfile to build the server:
 
 ## Build Instructions
 
-To build and run the project together:
+1. To build and run the db and redis in the background:
 
 ```
- chmod +x run-all.sh && ./run-all.sh
+chmod +x run-services.sh && ./run-services.sh
 ```
 
-To build and run the project's individual compose files, follow these instructions:
+2. To build and run the project's RESTful API:
 
-1. **Build Database Docker Image and Start Replicas:**
-
-   ```bash
-   docker-compose -f docker-compose-db-replicas.yml up
-   ```
-
-2. **Build Redis Docker Image and Start Redis:**
-
-   ```bash
-   docker-compose -f docker-compose-redis.yml up
-   ```
-
-3. **Build API Server Docker Image:**
-
-   ```bash
-   docker-compose build
-   ```
-
-4. **Start API Server:**
-   ```bash
-   docker-compose -f docker-compose.yml up
-   ```
+```bash
+docker-compose build && docker-compose -f docker-compose.yml up
+```
