@@ -1,5 +1,4 @@
 use axum::http::StatusCode;
-use std::time::SystemTime;
 use tower::BoxError;
 
 pub async fn handle_timeout_error(err: BoxError) -> (StatusCode, String) {
@@ -22,15 +21,4 @@ where
     E: std::error::Error,
 {
     (StatusCode::INTERNAL_SERVER_ERROR, err.to_string())
-}
-
-pub fn report_time(start: SystemTime, action: &str) {
-    match start.elapsed() {
-        Ok(elapsed) => {
-            println!("SystemTime taken to {:?}: {:?}", action, elapsed);
-        }
-        Err(e) => {
-            println!("Error: {e:?}");
-        }
-    }
 }
