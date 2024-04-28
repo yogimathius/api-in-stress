@@ -48,3 +48,9 @@ chmod +x run-services.sh && ./run-services.sh
 ```bash
 docker-compose build && docker-compose -f docker-compose.yml up
 ```
+
+3. To run the API in debug mode:
+
+```
+docker-compose -f docker-compose.yml --env-file debug.env up
+```

@@ -11,6 +11,7 @@ services:
       DATABASE_URL: "postgres://postgres:pass123@db_part1:5432/warriors"
       APP_ENVIRONMENT: "production"
       SHARD: 1
+      DEBUG: ${DEBUG:-false}
     ports:
       - "3000"
     networks:
@@ -26,6 +27,7 @@ services:
       DATABASE_URL: "postgres://postgres:pass123@db_part2:5432/warriors"
       APP_ENVIRONMENT: "production"
       SHARD: 2
+      DEBUG: ${DEBUG:-false}
     ports:
       - "3001"
     networks:
