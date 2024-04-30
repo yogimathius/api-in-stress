@@ -21,9 +21,7 @@ use tokio::net::TcpListener;
 use tower::Service;
 use tower::{timeout::TimeoutLayer, ServiceBuilder};
 
-pub struct Application {
-    // port: u16,
-}
+pub struct Application {}
 
 impl Application {
     pub async fn new() -> Router {
