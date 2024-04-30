@@ -1,4 +1,4 @@
-use super::queries::{SEARCH_WARRIORS, SEARCH_WARRIORS_WITH_SKILLS};
+use super::queries::SEARCH_WARRIORS;
 use crate::app_state::AppState;
 use crate::models::Warrior;
 use crate::utilities::internal_error;
@@ -34,13 +34,7 @@ pub async fn search_warriors(
 
         return (StatusCode::OK, headers, Json(warriors));
     } else {
-        let skills_to_check = vec![params.get("t").unwrap().to_string()];
-        let query = if state.valid_skills.are_valid_skills(&skills_to_check) {
-            SEARCH_WARRIORS
-        } else {
-            SEARCH_WARRIORS_WITH_SKILLS
-        };
-        let warriors: Vec<Warrior> = sqlx::query_as(query)
+        let warriors: Vec<Warrior> = sqlx::query_as(SEARCH_WARRIORS)
             .bind(params.get("t"))
             .fetch_all(&state.primary_db_store)
             .await

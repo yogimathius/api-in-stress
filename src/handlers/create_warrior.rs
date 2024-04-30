@@ -1,10 +1,11 @@
-use crate::app_state::AppState;
+use crate::{app_state::AppState, models::Warrior};
 use axum::{
     extract::State,
     http::{HeaderMap, StatusCode},
     response::IntoResponse,
     Json,
 };
+use hyper::header;
 
 use crate::models::NewWarrior;
 use crate::utilities::internal_error;
@@ -23,53 +24,52 @@ pub async fn create_warrior(
     let mut headers = HeaderMap::new();
     headers.insert("content-type", "application/json".parse().unwrap());
 
-    if state.valid_skills.are_valid_skills(&warrior.skills) == false {
-        return (StatusCode::BAD_REQUEST, headers, "Invalid skill name(s)");
-    }
-
-    if warrior.skills.iter().any(|skill| skill.len() > 250) {
-        return (
-            StatusCode::BAD_REQUEST,
-            headers,
-            "Skill name cannot be more than 250 characters",
-        );
+    if state.valid_skills.are_valid_skills(&warrior.fight_skills) == false {
+        return (StatusCode::BAD_REQUEST, headers, "Invalid skill(s)");
     }
 
     let uuid = generate_uuid().await;
     let database_shard = std::env::var("SHARD").unwrap();
     let create_warrior_query = format!(
         r#"
-    WITH inserted_warrior AS (
-        INSERT INTO warriors_{} (id, name, dob)
-        VALUES ($1, $2, $3)
-        RETURNING id
-    ),
-    inserted_warrior_skills AS (
-        INSERT INTO warrior_skills_{} (warrior_id, skill_id)
-        SELECT inserted_warrior.id, s.id
-        FROM inserted_warrior
-        CROSS JOIN unnest($4::text[]) AS skill_name
-        JOIN skills_{} s ON s.name = skill_name
-    )
-    SELECT id FROM inserted_warrior;
-    "#,
-        database_shard, database_shard, database_shard
+        WITH inserted_warrior AS (
+            INSERT INTO warriors_{} (id, name, dob)
+            VALUES ($1, $2, $3)
+        )
+        INSERT INTO warrior_skills_{} (skill_id, warrior_id) 
+        SELECT * FROM unnest($4::int[], $5::text[])
+        RETURNING warrior_id
+        "#,
+        database_shard, database_shard
     );
+
+    let skill_ids = state
+        .valid_skills
+        .filter_warrior_skills(&warrior.fight_skills);
+
     // println!("create_warrior_query: {}", create_warrior_query);
-    let warrior_id: (String,) = sqlx::query_as(&create_warrior_query)
+    sqlx::query(&create_warrior_query)
         .bind(&uuid)
         .bind(&warrior.name)
         .bind(&warrior.dob)
-        .bind(&warrior.skills)
+        .bind(&skill_ids)
+        .bind(vec![uuid.clone(); skill_ids.len()])
         .fetch_one(&state.db_store)
         .await
         .map_err(|err| internal_error(err))
         .unwrap();
+
+    let warrior = Warrior {
+        id: uuid.clone(),
+        name: warrior.name.clone(),
+        dob: warrior.dob.clone(),
+        fight_skills: Some(warrior.fight_skills.clone()),
+    };
+
     let warrior_json: String = serde_json::to_string(&warrior).unwrap();
 
-    state.redis_store.set(&warrior_id.0, warrior_json).await;
-    let location: String = format!("/warrior/{}", warrior_id.0);
-    headers.insert("location", location.parse().unwrap());
-
+    state.redis_store.set(&warrior.id, warrior_json).await;
+    let location: String = format!("/warrior/{}", warrior.id);
+    headers.insert(header::LOCATION, location.parse().unwrap());
     (StatusCode::CREATED, headers, "")
 }
