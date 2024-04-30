@@ -20,7 +20,6 @@ use std::time::Duration;
 use tokio::net::TcpListener;
 use tower::Service;
 use tower::{timeout::TimeoutLayer, ServiceBuilder};
-use tower_http::trace::TraceLayer;
 
 pub struct Application {
     // port: u16,
