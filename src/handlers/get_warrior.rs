@@ -1,8 +1,11 @@
 use crate::app_state::AppState;
-use serde_json;
 use axum::{
-    extract::{Path, State}, http::{HeaderMap, StatusCode}, response::IntoResponse, Json
+    extract::{Path, State},
+    http::{HeaderMap, StatusCode},
+    response::IntoResponse,
+    Json,
 };
+use serde_json;
 
 use crate::models::Warrior;
 
@@ -17,8 +20,12 @@ pub async fn get_warrior(
     let user_id_clone = user_id.clone();
     let mut headers = HeaderMap::new();
     headers.insert("content-type", "application/json".parse().unwrap());
-    
-    let redis_warrior = state.redis_store.get(&user_id.clone()).await.unwrap_or("".to_string());
+
+    let redis_warrior = state
+        .redis_store
+        .get(&user_id.clone())
+        .await
+        .unwrap_or("".to_string());
     if !redis_warrior.is_empty() {
         let warrior: Warrior = serde_json::from_str(&redis_warrior).unwrap();
         return (StatusCode::OK, headers, Json(warrior));
@@ -35,13 +42,13 @@ pub async fn get_warrior(
                 let _ = state.redis_store.set(&user_id_clone, warrior_json);
 
                 return (StatusCode::OK, headers, Json(warrior));
-            },
+            }
             None => {
                 let no_warrior: Warrior = Warrior {
                     id: "".to_string(),
                     name: "".to_string(),
                     dob: "".to_string(),
-                    fight_skills: None
+                    fight_skills: None,
                 };
                 return (StatusCode::NOT_FOUND, headers, Json(no_warrior));
             }

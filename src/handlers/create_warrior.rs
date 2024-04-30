@@ -1,10 +1,11 @@
-use crate::app_state::AppState;
+use crate::{app_state::AppState, models::Warrior};
 use axum::{
     extract::State,
     http::{HeaderMap, StatusCode},
     response::IntoResponse,
     Json,
 };
+use hyper::header;
 
 use crate::models::NewWarrior;
 use crate::utilities::internal_error;
@@ -23,11 +24,11 @@ pub async fn create_warrior(
     let mut headers = HeaderMap::new();
     headers.insert("content-type", "application/json".parse().unwrap());
 
-    if state.valid_skills.are_valid_skills(&warrior.skills) == false {
+    if state.valid_skills.are_valid_skills(&warrior.fight_skills) == false {
         return (StatusCode::BAD_REQUEST, headers, "Invalid skill name(s)");
     }
 
-    if warrior.skills.iter().any(|skill| skill.len() > 250) {
+    if warrior.fight_skills.iter().any(|skill| skill.len() > 250) {
         return (
             StatusCode::BAD_REQUEST,
             headers,
@@ -60,16 +61,23 @@ pub async fn create_warrior(
         .bind(&uuid)
         .bind(&warrior.name)
         .bind(&warrior.dob)
-        .bind(&warrior.skills)
+        .bind(&warrior.fight_skills)
         .fetch_one(&state.db_store)
         .await
         .map_err(|err| internal_error(err))
         .unwrap();
+
+    let warrior = Warrior {
+        id: warrior_id.0,
+        name: warrior.name.clone(),
+        dob: warrior.dob.clone(),
+        fight_skills: Some(warrior.fight_skills.clone()),
+    };
+
     let warrior_json: String = serde_json::to_string(&warrior).unwrap();
 
-    state.redis_store.set(&warrior_id.0, warrior_json).await;
-    let location: String = format!("/warrior/{}", warrior_id.0);
-    headers.insert("location", location.parse().unwrap());
-
+    state.redis_store.set(&warrior.id, warrior_json).await;
+    let location: String = format!("/warrior/{}", warrior.id);
+    headers.insert(header::LOCATION, location.parse().unwrap());
     (StatusCode::CREATED, headers, "")
 }
