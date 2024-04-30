@@ -16,7 +16,8 @@ pub struct Warrior {
     pub fight_skills: Option<Vec<String>>,
 }
 
-#[derive(Debug, Deserialize, Serialize, Encode, Decode)]
-pub struct WarriorSkill {
+#[derive(Debug, Deserialize, Serialize, Encode, Decode, FromRow, PartialEq, Eq, Hash, Clone)]
+pub struct DbSkill {
+    pub id: String,
     pub name: String,
 }

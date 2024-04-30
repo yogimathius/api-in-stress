@@ -1,31 +1,43 @@
 use std::collections::HashMap;
 
+use crate::models::DbSkill;
+
 #[derive(Clone)]
 pub struct ValidFightSkills {
-    skills: HashMap<String, bool>,
+    skills: HashMap<String, i32>,
 }
 
 impl ValidFightSkills {
-    pub fn new() -> Self {
+    pub async fn new(db_pool: sqlx::PgPool) -> Self {
         let mut skills = HashMap::new();
+
         // Initialize skills hashmap with the provided list of skills
-        let skill_list = vec![
-            "BJJ", "Karate", "Judo", "KungFu", "Capoeira", "Boxing", "Taekwondo", "Aikido",
-            "KravMaga", "MuayThai", "KickBoxing", "Pankration", "Wrestling", "Sambo", "Savate",
-            "Sumo", "Kendo", "Hapkido", "LutaLivre", "WingChu", "Ninjutsu", "Fencing",
-            "ArmWrestling", "SuckerPunch", "44Magnum", "Swordsmanship", "Archery", "Magic",
-            "Stealth", "Leadership", "Survival", "Alchemy", "Tactics", "Hand-to-hand Combat",
-            "Marksmanship", "Sorcery", "Diplomacy", "Navigation", "Intelligence", "Tracking",
-            "Healing", "Engineering", "Acrobatics", "Animal Handling", "Music", "Empathy",
-            "Negotiation", "Persuasion",
-        ];
+        let skill_list: Vec<DbSkill> = sqlx::query_as("SELECT * FROM skills")
+            .fetch_all(&db_pool)
+            .await
+            .expect("Failed to fetch skills from the database");
+
         for skill in skill_list {
-            skills.insert(String::from(skill), true);
+            skills.insert(skill.name, skill.id);
         }
         ValidFightSkills { skills }
     }
 
     pub fn are_valid_skills(&self, skills: &Vec<std::string::String>) -> bool {
-        !skills.is_empty() && skills.len() <= 20 && skills.iter().all(|skill| self.skills.contains_key(skill))
+        !skills.is_empty()
+            && skills.len() <= 20
+            && skills
+                .iter()
+                .all(|skill| self.skills.contains_key(skill) && skill.len() <= 250)
+    }
+
+    pub fn filter_warrior_skills(
+        &self,
+        skills: &[String], // Changed to slice
+    ) -> Vec<i32> {
+        skills
+            .iter()
+            .filter_map(|skill| self.skills.get(skill).map(|id| *id))
+            .collect()
     }
 }

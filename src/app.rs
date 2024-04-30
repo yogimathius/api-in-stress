@@ -29,7 +29,7 @@ impl Application {
     pub async fn new() -> Router {
         let database = Database::new().await;
         let redis_store = RedisDatabase::new().await;
-        let valid_skills = ValidFightSkills::new();
+        let valid_skills = ValidFightSkills::new(database.primary_pool.clone()).await;
         let debug = std::env::var("DEBUG").unwrap_or("false".to_string());
         if debug == "true" {
             println!("Debug mode enabled");
