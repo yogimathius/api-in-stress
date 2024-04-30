@@ -5,10 +5,8 @@ use crate::handlers::{
     search_warriors::search_warriors,
 };
 use crate::redis::RedisDatabase;
-use crate::utilities::handle_timeout_error;
 use crate::valid_fight_skills::ValidFightSkills;
 use axum::{
-    error_handling::HandleErrorLayer,
     http::Request,
     routing::{get, post},
     Router,
@@ -16,10 +14,8 @@ use axum::{
 use hyper::body::Incoming;
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server;
-use std::time::Duration;
 use tokio::net::TcpListener;
 use tower::Service;
-use tower::{timeout::TimeoutLayer, ServiceBuilder};
 
 pub struct Application {}
 
@@ -49,13 +45,6 @@ impl Application {
             .route("/warrior", get(search_warriors))
             .route("/counting-warriors", get(count_warriors))
             .with_state(app_state)
-            .layer(tower::ServiceBuilder::new().concurrency_limit(2000))
-            .layer(
-                ServiceBuilder::new()
-                    .layer(HandleErrorLayer::new(handle_timeout_error))
-                    .layer(TimeoutLayer::new(Duration::from_secs(30))),
-            )
-        // .layer(TraceLayer::new_for_http())
     }
 
     pub async fn serve(listener: TcpListener, app: axum::Router) {
