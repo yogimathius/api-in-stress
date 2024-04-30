@@ -18,6 +18,12 @@ pub struct Warrior {
 
 #[derive(Debug, Deserialize, Serialize, Encode, Decode, FromRow, PartialEq, Eq, Hash, Clone)]
 pub struct DbSkill {
-    pub id: String,
+    pub id: i32,
     pub name: String,
+}
+
+#[derive(Debug, Deserialize, Serialize, Encode, Decode, FromRow, PartialEq, Eq, Hash, Clone)]
+pub struct WarriorSkill {
+    pub skill_id: i32,
+    pub warrior_id: String,
 }
