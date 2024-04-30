@@ -36,9 +36,9 @@ pub async fn search_warriors(
     } else {
         let skills_to_check = vec![params.get("t").unwrap().to_string()];
         let query = if state.valid_skills.are_valid_skills(&skills_to_check) {
-            SEARCH_WARRIORS
-        } else {
             SEARCH_WARRIORS_WITH_SKILLS
+        } else {
+            SEARCH_WARRIORS
         };
         let warriors: Vec<Warrior> = sqlx::query_as(query)
             .bind(params.get("t"))
