@@ -9,12 +9,13 @@ pub struct Database {
 impl Database {
     pub async fn new() -> Self {
         let db_connection_str = std::env::var("DATABASE_URL")
-        .unwrap_or_else(|_| "postgres://postgres:password@localhost".to_string());
+            .unwrap_or_else(|_| "postgres://postgres:password@localhost".to_string());
 
         let pool: sqlx::Pool<sqlx::Postgres> = create_pool(db_connection_str).await;
 
-        let primary_db_connection_str = "postgres://postgres:pass123@postgres:5432/warriors".to_string();
-        
+        let primary_db_connection_str =
+            "postgres://postgres:pass123@postgres:5432/warriors".to_string();
+
         let primary_pool = create_pool(primary_db_connection_str).await;
 
         Self { pool, primary_pool }

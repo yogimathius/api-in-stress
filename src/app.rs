@@ -6,7 +6,7 @@ use crate::handlers::{
 };
 use crate::redis::RedisDatabase;
 use crate::utilities::handle_timeout_error;
-use crate::valid_fight_skills::ValidFightSkills;
+use crate::valid_fight_skills::DbFightSkills;
 use axum::{
     error_handling::HandleErrorLayer,
     http::Request,
@@ -29,7 +29,7 @@ impl Application {
     pub async fn new() -> Router {
         let database = Database::new().await;
         let redis_store = RedisDatabase::new().await;
-        let valid_skills = ValidFightSkills::new(database.primary_pool.clone()).await;
+        let valid_skills = DbFightSkills::new(database.primary_pool.clone()).await;
         let debug = std::env::var("DEBUG").unwrap_or("false".to_string());
         if debug == "true" {
             println!("Debug mode enabled");
@@ -37,10 +37,12 @@ impl Application {
                 .with_max_level(tracing::Level::DEBUG)
                 .init();
         }
+        let database_shard = std::env::var("SHARD").unwrap();
 
         let app_state = AppState {
             db_store: database.pool,
             primary_db_store: database.primary_pool,
+            database_shard: database_shard,
             redis_store: redis_store,
             valid_skills: valid_skills,
         };
