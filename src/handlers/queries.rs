@@ -18,7 +18,7 @@ SELECT warriors.*,
 FROM warriors  
 WHERE 
     warriors.name ILIKE '%' || $1 || '%' OR
-    warriors.dob ILIKE '%' || $1 || '%' OR
+    warriors.dob ILIKE '%' || $1 || '%'
 LIMIT 50;"#;
 
 pub const SEARCH_WARRIORS_WITH_SKILLS: &str = r#"
