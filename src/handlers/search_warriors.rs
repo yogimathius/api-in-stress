@@ -15,13 +15,13 @@ pub async fn search_warriors(
     State(state): State<AppState>,
     Query(params): Query<HashMap<String, String>>,
 ) -> impl IntoResponse {
-    let query_key = format!("warriors:{:?}", params.get("t"));
     let mut headers = HeaderMap::new();
     headers.insert("content-type", "application/json".parse().unwrap());
     let no_warriors: Vec<Warrior> = vec![];
     if params.get("t").is_none() {
         return (StatusCode::BAD_REQUEST, headers, Json(no_warriors));
     }
+    let query_key = format!("warriors:{}", params.get("t").unwrap());
 
     let warriors_json = state
         .redis_store
@@ -31,7 +31,6 @@ pub async fn search_warriors(
 
     if !warriors_json.is_empty() {
         let warriors: Vec<Warrior> = serde_json::from_str(&warriors_json).unwrap();
-
         return (StatusCode::OK, headers, Json(warriors));
     } else {
         let warriors: Vec<Warrior> = sqlx::query_as(SEARCH_WARRIORS)
