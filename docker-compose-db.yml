@@ -29,7 +29,7 @@ services:
     healthcheck:
       test: ["CMD", "pg_isready", "-h", "localhost", "-p", "5432"]
       interval: 10s
-      timeout: 5s
+      timeout: 10s
       retries: 5
 
   db_part1:
