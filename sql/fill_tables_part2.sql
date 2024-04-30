@@ -47,30 +47,7 @@ INSERT INTO skills_2 (name) VALUES
 ('Fencing'),
 ('ArmWrestling'),
 ('SuckerPunch'),
-('44Magnum'),
-('Swordsmanship'),
-('Archery'),
-('Magic'),
-('Stealth'),
-('Leadership'),
-('Survival'),
-('Alchemy'),
-('Tactics'),
-('Hand-to-hand Combat'),
-('Marksmanship'),
-('Sorcery'),
-('Diplomacy'),
-('Navigation'),
-('Intelligence'),
-('Tracking'),
-('Healing'),
-('Engineering'),
-('Acrobatics'),
-('Animal Handling'),
-('Music'),
-('Empathy'),
-('Negotiation'),
-('Persuasion');
+('44Magnum');
 
 -- Seed data for warrior_skills
 INSERT INTO warrior_skills_2 (warrior_id, skill_id) VALUES
