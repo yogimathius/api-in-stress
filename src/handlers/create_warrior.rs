@@ -69,7 +69,22 @@ pub async fn create_warrior(
     let warrior_json: String = serde_json::to_string(&warrior).unwrap();
 
     state.redis_store.set(&warrior.id, warrior_json).await;
+
+    let search_key = format!("warriors:{}", warrior.id);
+    let search_name_key = format!("warriors:{}", warrior.name);
+    let warriors_arr = vec![&warrior];
+    let warriors_json: String = serde_json::to_string(&warriors_arr).unwrap();
+    state
+        .redis_store
+        .set(&search_key, warriors_json.clone())
+        .await;
+    state
+        .redis_store
+        .set(&search_name_key, warriors_json.clone())
+        .await;
+
     let location: String = format!("/warrior/{}", warrior.id);
+
     headers.insert(header::LOCATION, location.parse().unwrap());
     (StatusCode::CREATED, headers, "")
 }
