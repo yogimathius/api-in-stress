@@ -9,7 +9,7 @@ use crate::utilities::handle_timeout_error;
 use crate::valid_fight_skills::DbFightSkills;
 use axum::{
     error_handling::HandleErrorLayer,
-    http::Request,
+    http::Request as AxumRequest,
     routing::{get, post},
     Router,
 };
@@ -17,10 +17,20 @@ use hyper::body::Incoming;
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server;
 use std::time::Duration;
+use std::{collections::HashMap, sync::Arc};
 use tokio::net::TcpListener;
+// use tokio::{sync::mpsc, task};
 use tower::Service;
 use tower::{timeout::TimeoutLayer, ServiceBuilder};
 
+// Define your request structure
+// struct Request {
+//     sql_statement: String,
+//     params: HashMap<String, String>,
+// }
+
+// Define your batch size
+// const BATCH_SIZE: usize = 10;
 pub struct Application {
     // port: u16,
 }
@@ -76,7 +86,7 @@ impl Application {
                 // `hyper::service::service_fn` to create a hyper `Service` that calls our app through
                 // `tower::Service::call`.
                 let hyper_service =
-                    hyper::service::service_fn(move |request: Request<Incoming>| {
+                    hyper::service::service_fn(move |request: AxumRequest<Incoming>| {
                         // We have to clone `tower_service` because hyper's `Service` uses `&self` whereas
                         // tower's `Service` requires `&mut self`.
                         //
@@ -99,3 +109,11 @@ impl Application {
         }
     }
 }
+
+// async fn process_batch(batch: Vec<Request>) {
+//     for request in batch {
+//         // Execute SQL statements (e.g., insert into PostgreSQL tables)
+//         println!("Executing SQL: {}", request.sql_statement);
+//         println!("Params: {:?}", request.params);
+//     }
+// }

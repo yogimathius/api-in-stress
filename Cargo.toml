@@ -23,9 +23,7 @@ env_logger = "0.9"
 hyper = { version = "1.0", features = [] }
 hyper-util = { version = "0.1", features = ["tokio", "server-auto", "http1"] }
 redis = "0.24.0"
-
-
-
+validator = { version = "0.16", features = ["derive"] }
 serde = { version = "1.0", features = ["derive"] }
 sqlx = { version = "0.6", features = [ "runtime-tokio-rustls", "postgres", "macros" ] }
 tokio = { version = "1.37.0", features = ["full"] }
@@ -41,6 +39,7 @@ tracing-bunyan-formatter = "0.3.9"
 tracing-log = "0.2.0"
 secrecy = { version = "0.8.0", features = ["serde"] }
 serde-aux = "4.5.0"
+serde_valid = "0.19.0"
 [dependencies.uuid]
 version = "1.8.0"
 features = [
