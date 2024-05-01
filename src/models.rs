@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use serde_valid::Validate;
 use sqlx::{Decode, Encode, FromRow};
-// use validator::{Validate, ValidationError};
 
 #[derive(Debug, Validate, Deserialize, Serialize, Clone)]
 pub struct NewWarrior {

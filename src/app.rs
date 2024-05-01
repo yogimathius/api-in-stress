@@ -9,7 +9,7 @@ use crate::utilities::handle_timeout_error;
 use crate::valid_fight_skills::DbFightSkills;
 use axum::{
     error_handling::HandleErrorLayer,
-    http::Request as AxumRequest,
+    http::Request,
     routing::{get, post},
     Router,
 };
@@ -57,7 +57,6 @@ impl Application {
                     .layer(HandleErrorLayer::new(handle_timeout_error))
                     .layer(TimeoutLayer::new(Duration::from_secs(30))),
             )
-        // .layer(TraceLayer::new_for_http())
     }
 
     pub async fn serve(listener: TcpListener, app: axum::Router) {
@@ -74,7 +73,7 @@ impl Application {
                 // `hyper::service::service_fn` to create a hyper `Service` that calls our app through
                 // `tower::Service::call`.
                 let hyper_service =
-                    hyper::service::service_fn(move |request: AxumRequest<Incoming>| {
+                    hyper::service::service_fn(move |request: Request<Incoming>| {
                         // We have to clone `tower_service` because hyper's `Service` uses `&self` whereas
                         // tower's `Service` requires `&mut self`.
                         //
@@ -97,11 +96,3 @@ impl Application {
         }
     }
 }
-
-// async fn process_batch(batch: Vec<Request>) {
-//     for request in batch {
-//         // Execute SQL statements (e.g., insert into PostgreSQL tables)
-//         println!("Executing SQL: {}", request.sql_statement);
-//         println!("Params: {:?}", request.params);
-//     }
-// }
