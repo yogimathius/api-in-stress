@@ -17,30 +17,51 @@ pub async fn create_warrior(
 ) -> impl IntoResponse {
     let mut headers = HeaderMap::new();
     headers.insert("content-type", "application/json".parse().unwrap());
-    let skill_ids = state.valid_skills.get_valid_skills(&warrior.fight_skills);
-
-    if skill_ids.len() > 0 {
+    if state.valid_skills.are_valid_skills(&warrior.fight_skills) {
+        let skill_ids = state.valid_skills.get_valid_skills(&warrior.fight_skills);
+        let skill_count = skill_ids.len();
         let uuid = Uuid::new_v4().to_string();
+        let mut values = String::new();
+        let mut params: Vec<_> = Vec::new();
+        for i in 0..skill_count {
+            let skill_placeholder = format!("${}", i * 2 + 1);
+            let warrior_placeholder = format!("${}", i * 2 + 2);
+            values.push_str(&format!(
+                "({}, {}),",
+                skill_placeholder, warrior_placeholder
+            ));
+            params.push((skill_ids[i], &uuid));
+        }
+        values.pop();
+
         let create_warrior_query = format!(
             r#"
             WITH inserted_warrior AS (
                 INSERT INTO warriors_{} (id, name, dob)
-                VALUES ($1, $2, $3)
+                VALUES (${}, ${}, ${})
+                RETURNING id
             )
-            INSERT INTO warrior_skills_{} (skill_id, warrior_id) 
-            SELECT * FROM unnest($4::int[], $5::text[])
+            INSERT INTO warrior_skills_{} (skill_id, warrior_id)
+            VALUES {}
             RETURNING warrior_id
             "#,
-            state.database_shard, state.database_shard
+            state.database_shard,
+            skill_count * 2 + 1,
+            skill_count * 2 + 2,
+            skill_count * 2 + 3,
+            state.database_shard,
+            values
         );
 
-        // println!("create_warrior_query: {}", create_warrior_query);
-        sqlx::query(&create_warrior_query)
+        let mut query = sqlx::query(&create_warrior_query);
+        for (skill_id, warrior_id) in &params {
+            query = query.bind(skill_id);
+            query = query.bind(warrior_id);
+        }
+        query
             .bind(&uuid)
             .bind(&warrior.name)
             .bind(&warrior.dob)
-            .bind(&skill_ids)
-            .bind(vec![uuid.clone(); skill_ids.len()])
             .fetch_one(&state.db_store)
             .await
             .map_err(|err| internal_error(err))
@@ -53,17 +74,21 @@ pub async fn create_warrior(
             fight_skills: Some(warrior.fight_skills.clone()),
         };
 
-        let warrior_json: String = serde_json::to_string(&warrior).unwrap();
+        let warrior_json: String = serde_json::to_string(&warrior.clone()).unwrap();
         state
             .redis_store
             .set(&warrior.id, warrior_json.clone())
             .await;
 
         let search_warrior_key = format!("warrior:{}", warrior.name);
+        let warrior_array = vec![warrior.clone()];
+        let warrior_arr_json: String = serde_json::to_string(&warrior_array).unwrap();
+
         state
             .redis_store
-            .set(&search_warrior_key, warrior_json.clone())
+            .set(&search_warrior_key, warrior_arr_json)
             .await;
+
         let location: String = format!("/warrior/{}", warrior.id);
         headers.insert(header::LOCATION, location.parse().unwrap());
         (StatusCode::CREATED, headers, "Successfully created warrior")
