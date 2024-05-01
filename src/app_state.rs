@@ -1,21 +1,24 @@
-use bb8_redis::RedisConnectionManager;
-use bb8::Pool;
-use sqlx::postgres::PgPool;
-use axum::{
-    async_trait, extract::{FromRef, FromRequestParts}, http::{request::Parts, StatusCode}
-};
 use crate::{redis::RedisDatabase, utilities::internal_error};
+use axum::{
+    async_trait,
+    extract::{FromRef, FromRequestParts},
+    http::{request::Parts, StatusCode},
+};
+use bb8::Pool;
+use bb8_redis::RedisConnectionManager;
+use sqlx::postgres::PgPool;
 pub struct DatabaseConnection(pub sqlx::pool::PoolConnection<sqlx::Postgres>);
 type RedisPool = Pool<RedisConnectionManager>;
 pub struct RedisPoolWrapper(pub RedisPool);
-use crate::valid_fight_skills::ValidFightSkills;
+use crate::valid_fight_skills::DbFightSkills;
 
 #[derive(Clone)]
 pub struct AppState {
     pub(crate) db_store: sqlx::PgPool,
     pub(crate) primary_db_store: sqlx::PgPool,
-    pub(crate) redis_store:  RedisDatabase,
-    pub(crate) valid_skills: ValidFightSkills,
+    pub(crate) database_shard: String,
+    pub(crate) redis_store: RedisDatabase,
+    pub(crate) valid_skills: DbFightSkills,
 }
 
 #[async_trait]

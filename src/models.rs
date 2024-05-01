@@ -1,10 +1,13 @@
 use serde::{Deserialize, Serialize};
+use serde_valid::Validate;
 use sqlx::{Decode, Encode, FromRow};
 
-#[derive(Debug, serde::Deserialize, serde::Serialize, Clone)]
+#[derive(Debug, Validate, Deserialize, Serialize, Clone)]
 pub struct NewWarrior {
     pub name: String,
     pub dob: String,
+    #[validate(min_items = 1, message = "At least one skill is required")]
+    #[validate(max_items = 20, message = "Maximum of 20 skills allowed")]
     pub fight_skills: Vec<String>,
 }
 

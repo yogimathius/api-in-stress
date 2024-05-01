@@ -3,11 +3,11 @@ use std::collections::HashMap;
 use crate::models::DbSkill;
 
 #[derive(Clone)]
-pub struct ValidFightSkills {
+pub struct DbFightSkills {
     skills: HashMap<String, i32>,
 }
 
-impl ValidFightSkills {
+impl DbFightSkills {
     pub async fn new(db_pool: sqlx::PgPool) -> Self {
         let mut skills = HashMap::new();
 
@@ -20,21 +20,11 @@ impl ValidFightSkills {
         for skill in skill_list {
             skills.insert(skill.name, skill.id);
         }
-        ValidFightSkills { skills }
+        DbFightSkills { skills }
     }
 
-    pub fn are_valid_skills(&self, skills: &Vec<std::string::String>) -> bool {
-        !skills.is_empty()
-            && skills.len() <= 20
-            && skills
-                .iter()
-                .all(|skill| self.skills.contains_key(skill) && skill.len() <= 250)
-    }
-
-    pub fn filter_warrior_skills(
-        &self,
-        skills: &[String], // Changed to slice
-    ) -> Vec<i32> {
+    pub fn get_valid_skills(&self, skills: &Vec<std::string::String>) -> Vec<i32> {
+        // get all skill ids that match the skills provided
         skills
             .iter()
             .filter_map(|skill| self.skills.get(skill).map(|id| *id))

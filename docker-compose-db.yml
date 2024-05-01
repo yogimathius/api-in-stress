@@ -23,7 +23,7 @@ services:
       - "./sql/db_primary.sql:/docker-entrypoint-initdb.d/setup.sql:cached"
     networks:
       - mynetwork
-    command: postgres -c listen_addresses='*' -c 'max_connections=1100'
+    command: postgres -c listen_addresses='*' -c 'max_connections=800' -c shared_buffers=512MB -c effective_cache_size=2GB -c work_mem=64MB -c maintenance_work_mem=512MB -c checkpoint_completion_target=0.9 -c wal_buffers=16MB -c max_wal_size=2GB
     env_file:
       - ./.env
     healthcheck:
