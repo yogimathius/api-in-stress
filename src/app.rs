@@ -17,23 +17,11 @@ use hyper::body::Incoming;
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server;
 use std::time::Duration;
-use std::{collections::HashMap, sync::Arc};
 use tokio::net::TcpListener;
-// use tokio::{sync::mpsc, task};
 use tower::Service;
 use tower::{timeout::TimeoutLayer, ServiceBuilder};
 
-// Define your request structure
-// struct Request {
-//     sql_statement: String,
-//     params: HashMap<String, String>,
-// }
-
-// Define your batch size
-// const BATCH_SIZE: usize = 10;
-pub struct Application {
-    // port: u16,
-}
+pub struct Application {}
 
 impl Application {
     pub async fn new() -> Router {
