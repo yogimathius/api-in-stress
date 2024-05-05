@@ -49,9 +49,16 @@ impl Application {
             .with_state(app_state)
     }
 
-    pub async fn serve(listener: TcpListener, app: axum::Router) {
+    pub async fn serve(
+        listener: TcpListener,
+        app: axum::Router,
+        semaphore: std::sync::Arc<tokio::sync::Semaphore>,
+    ) {
         println!("Listening on: {}", listener.local_addr().unwrap());
+
         loop {
+            let _permit = semaphore.acquire().await.unwrap();
+
             let tower_service = app.clone();
             let (socket, _remote_addr) = listener.accept().await.unwrap();
             tokio::spawn(async move {
