@@ -24,7 +24,7 @@ impl Database {
 
 pub async fn create_pool(db_connection_str: String) -> sqlx::PgPool {
     PgPoolOptions::new()
-        .max_connections(10000)
+        .max_connections(40000)
         .acquire_timeout(Duration::from_secs(10))
         .connect(&db_connection_str)
         .await

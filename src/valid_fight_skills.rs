@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use crate::models::DbSkill;
 
@@ -23,8 +23,18 @@ impl DbFightSkills {
         DbFightSkills { skills }
     }
 
+    pub fn are_valid_skills(&self, skills: &Vec<String>) -> bool {
+        if !(1..=20).contains(&skills.len()) {
+            return false;
+        }
+
+        let unique_skills: HashSet<_> = skills.iter().collect();
+
+        skills.iter().all(|skill| self.skills.contains_key(skill))
+            && skills.len() == unique_skills.len()
+    }
+
     pub fn get_valid_skills(&self, skills: &Vec<std::string::String>) -> Vec<i32> {
-        // get all skill ids that match the skills provided
         skills
             .iter()
             .filter_map(|skill| self.skills.get(skill).map(|id| *id))

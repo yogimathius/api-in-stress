@@ -11,7 +11,7 @@ pub struct NewWarrior {
     pub fight_skills: Vec<String>,
 }
 
-#[derive(Debug, Deserialize, Serialize, FromRow)]
+#[derive(Debug, Deserialize, Serialize, FromRow, Clone)]
 pub struct Warrior {
     pub id: String,
     pub name: String,
