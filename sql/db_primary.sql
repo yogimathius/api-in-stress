@@ -25,7 +25,8 @@ GRANT USAGE ON FOREIGN SERVER db_part2 TO postgres;
 CREATE FOREIGN TABLE warriors_1 (
   id VARCHAR,  
   name VARCHAR,
-  dob VARCHAR
+  dob VARCHAR,
+  fight_skills VARCHAR
 ) SERVER db_part1;
 
 CREATE FOREIGN TABLE skills_1 (
@@ -33,27 +34,11 @@ CREATE FOREIGN TABLE skills_1 (
   name VARCHAR
 ) SERVER db_part1;
 
-CREATE FOREIGN TABLE warrior_skills_1 (
-  id INT,
-  warrior_id VARCHAR,
-  skill_id INT
-) SERVER db_part1;
-
 CREATE FOREIGN TABLE warriors_2 (
   id VARCHAR,
   name VARCHAR,
-  dob VARCHAR
-) SERVER db_part2;
-
-CREATE FOREIGN TABLE skills_2 (
-  id INT,
-  name VARCHAR
-) SERVER db_part2;
-
-CREATE FOREIGN TABLE warrior_skills_2 (
-  id INT,
-  warrior_id VARCHAR,
-  skill_id INT
+  dob VARCHAR,
+  fight_skills VARCHAR
 ) SERVER db_part2;
 
 CREATE VIEW warriors AS
@@ -61,10 +46,10 @@ SELECT * FROM warriors_1
 UNION ALL
 SELECT * FROM warriors_2;
 
+CREATE FOREIGN TABLE skills_2 (
+  id INT,
+  name VARCHAR
+) SERVER db_part2;
+
 CREATE VIEW skills AS
 SELECT * FROM skills_1;
-
-CREATE VIEW warrior_skills AS
-SELECT * FROM warrior_skills_1
-UNION ALL
-SELECT * FROM warrior_skills_2;

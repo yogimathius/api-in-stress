@@ -16,7 +16,7 @@ pub struct Warrior {
     pub id: String,
     pub name: String,
     pub dob: String,
-    pub fight_skills: Option<Vec<String>>,
+    pub fight_skills: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, Encode, Decode, FromRow, PartialEq, Eq, Hash, Clone)]
