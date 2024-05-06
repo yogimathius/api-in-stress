@@ -48,7 +48,7 @@ pub async fn get_warrior(
                     id: "".to_string(),
                     name: "".to_string(),
                     dob: "".to_string(),
-                    fight_skills: None,
+                    fight_skills: "".to_string(),
                 };
                 return (StatusCode::NOT_FOUND, headers, Json(no_warrior));
             }
