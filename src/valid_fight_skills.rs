@@ -1,6 +1,8 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::models::DbSkill;
+use chrono::NaiveDate;
+
+use crate::models::{DbSkill, NewWarrior};
 
 #[derive(Clone)]
 pub struct DbFightSkills {
@@ -11,7 +13,6 @@ impl DbFightSkills {
     pub async fn new(db_pool: sqlx::PgPool) -> Self {
         let mut skills = HashMap::new();
 
-        // Initialize skills hashmap with the provided list of skills
         let skill_list: Vec<DbSkill> = sqlx::query_as("SELECT * FROM skills")
             .fetch_all(&db_pool)
             .await
@@ -23,21 +24,27 @@ impl DbFightSkills {
         DbFightSkills { skills }
     }
 
-    pub fn are_valid_skills(&self, skills: &Vec<String>) -> bool {
-        if !(1..=20).contains(&skills.len()) {
-            return false;
+    pub fn get_valid_skills(&self, warrior: &NewWarrior) -> Result<Vec<i32>, &'static str> {
+        if let Err(_) = NaiveDate::parse_from_str(&warrior.dob, "%Y-%m-%d") {
+            return Err("Invalid date format");
         }
 
-        let unique_skills: HashSet<_> = skills.iter().collect();
+        if !(1..=20).contains(&warrior.fight_skills.len()) {
+            return Err("Invalid number of skills");
+        }
 
-        skills.iter().all(|skill| self.skills.contains_key(skill))
-            && skills.len() == unique_skills.len()
-    }
+        let mut unique_skill_ids = HashSet::new();
 
-    pub fn get_valid_skills(&self, skills: &Vec<std::string::String>) -> Vec<i32> {
-        skills
-            .iter()
-            .filter_map(|skill| self.skills.get(skill).map(|id| *id))
-            .collect()
+        for skill in &warrior.fight_skills {
+            if let Some(skill_id) = self.skills.get(skill).cloned() {
+                if !unique_skill_ids.insert(skill_id) {
+                    return Err("Duplicate skills");
+                }
+            } else {
+                return Err("Not all skills are valid");
+            }
+        }
+
+        Ok(unique_skill_ids.into_iter().collect())
     }
 }
