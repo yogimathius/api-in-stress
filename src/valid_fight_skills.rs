@@ -1,6 +1,7 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use chrono::NaiveDate;
+use serde_valid::Validate;
 
 use crate::models::{DbSkill, NewWarrior};
 
@@ -24,27 +25,25 @@ impl DbFightSkills {
         DbFightSkills { skills }
     }
 
-    pub fn get_valid_skills(&self, warrior: &NewWarrior) -> Result<Vec<i32>, &'static str> {
-        if let Err(_) = NaiveDate::parse_from_str(&warrior.dob, "%Y-%m-%d") {
-            return Err("Invalid date format");
-        }
+    pub fn get_valid_skills(&self, warrior: &NewWarrior) -> Result<Vec<i32>, String> {
+        let _ = warrior.validate().map_err(|e| e.to_string())?;
+        let _ = warrior
+            .dob
+            .parse::<NaiveDate>()
+            .map_err(|_| "Invalid date of birth".to_string())?;
 
-        if !(1..=20).contains(&warrior.fight_skills.len()) {
-            return Err("Invalid number of skills");
-        }
+        // Validate fight skills and collect valid skill IDs
+        let skill_ids: Result<Vec<_>, _> = warrior
+            .fight_skills
+            .iter()
+            .map(|skill| {
+                self.skills
+                    .get(skill)
+                    .map(|&id| id)
+                    .ok_or_else(|| format!("Invalid skill: {}", skill))
+            })
+            .collect();
 
-        let mut unique_skill_ids = HashSet::new();
-
-        for skill in &warrior.fight_skills {
-            if let Some(skill_id) = self.skills.get(skill).cloned() {
-                if !unique_skill_ids.insert(skill_id) {
-                    return Err("Duplicate skills");
-                }
-            } else {
-                return Err("Not all skills are valid");
-            }
-        }
-
-        Ok(unique_skill_ids.into_iter().collect())
+        skill_ids
     }
 }

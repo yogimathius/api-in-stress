@@ -1,4 +1,4 @@
-use crate::{app_state::AppState, models::Warrior, valid_fight_skills::DbFightSkills};
+use crate::{app_state::AppState, models::Warrior};
 use axum::{
     extract::State,
     http::{HeaderMap, StatusCode},
@@ -9,7 +9,6 @@ use hyper::header;
 
 use crate::models::NewWarrior;
 use crate::utilities::internal_error;
-use chrono::NaiveDate;
 use uuid::Uuid;
 
 pub async fn create_warrior(
@@ -84,7 +83,7 @@ pub async fn create_warrior(
             state
                 .redis_store
                 .set(
-                    &format!("warrior:{}", warrior.name),
+                    &format!("warriors:{}", warrior.name),
                     serde_json::to_string(&vec![&warrior]).unwrap(),
                 )
                 .await;
@@ -93,7 +92,11 @@ pub async fn create_warrior(
                 header::LOCATION,
                 format!("/warrior/{}", warrior.id).parse().unwrap(),
             );
-            (StatusCode::CREATED, headers, "Warrior created successfully")
+            (
+                StatusCode::CREATED,
+                headers,
+                "Warrior created successfully".to_string(),
+            )
         }
         Err(e) => return (StatusCode::BAD_REQUEST, headers, e),
     }
