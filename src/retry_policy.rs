@@ -10,7 +10,7 @@ pub struct Attempts(pub usize);
 impl<E> Policy<Req, Res, E> for Attempts {
     type Future = future::Ready<Self>;
 
-    fn retry(&self, req: &Req, result: Result<&Res, &E>) -> Option<Self::Future> {
+    fn retry(&self, _: &Req, result: Result<&Res, &E>) -> Option<Self::Future> {
         match result {
             Ok(_) => {
                 // Treat all `Response`s as success,

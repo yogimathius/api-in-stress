@@ -32,7 +32,6 @@ impl DbFightSkills {
             .parse::<NaiveDate>()
             .map_err(|_| "Invalid date of birth".to_string())?;
 
-        // Validate fight skills and collect valid skill IDs
         let skill_ids: Result<Vec<_>, _> = warrior
             .fight_skills
             .iter()

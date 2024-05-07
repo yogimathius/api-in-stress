@@ -57,7 +57,7 @@ impl Application {
         println!("Listening on: {}", listener.local_addr().unwrap());
 
         loop {
-            let _permit = semaphore.acquire().await.unwrap();
+            // let _permit = semaphore.acquire().await.unwrap();
 
             let tower_service = app.clone();
             let (socket, _remote_addr) = listener.accept().await.unwrap();

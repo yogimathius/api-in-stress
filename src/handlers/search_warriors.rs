@@ -19,8 +19,7 @@ pub async fn search_warriors(
     headers.insert("content-type", "application/json".parse().unwrap());
 
     if let Some(t) = params.get("t") {
-        let query_key = format!("warriors:{:?}", t);
-
+        let query_key = format!("warriors:{}", t);
         if let Some(warriors_json) = state.redis_store.get(&query_key).await {
             let warriors: Vec<Warrior> =
                 serde_json::from_str(&warriors_json).unwrap_or_else(|_| Vec::new());
