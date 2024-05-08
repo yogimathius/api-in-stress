@@ -1,4 +1,4 @@
-use crate::{app_state::AppState, models::Warrior, valid_fight_skills::DbFightSkills};
+use crate::{app_state::AppState, models::Warrior};
 use axum::{
     extract::State,
     http::{HeaderMap, StatusCode},
@@ -9,22 +9,7 @@ use hyper::header;
 
 use crate::models::NewWarrior;
 use crate::utilities::internal_error;
-use chrono::NaiveDate;
 use uuid::Uuid;
-
-fn valid_warrior_input(
-    warrior: &NewWarrior,
-    valid_skills: DbFightSkills,
-) -> Result<(), &'static str> {
-    let valid_date = NaiveDate::parse_from_str(&warrior.dob, "%Y-%m-%d");
-    if valid_date.is_err() {
-        return Err("Invalid date format");
-    }
-    if !valid_skills.are_valid_skills(&warrior.fight_skills) {
-        return Err("Invalid fight skills");
-    }
-    Ok(())
-}
 
 pub async fn create_warrior(
     State(state): State<AppState>,
@@ -33,9 +18,8 @@ pub async fn create_warrior(
     let mut headers = HeaderMap::new();
     headers.insert("content-type", "application/json".parse().unwrap());
 
-    match valid_warrior_input(&warrior, state.valid_skills.clone()) {
-        Ok(_) => {
-            let skill_ids = state.valid_skills.get_valid_skills(&warrior.fight_skills);
+    match state.valid_skills.get_valid_skills(&warrior) {
+        Ok(skill_ids) => {
             let skill_count = skill_ids.len();
             let uuid = Uuid::new_v4().to_string();
             let mut values = String::new();
@@ -56,7 +40,7 @@ pub async fn create_warrior(
                 WITH inserted_warrior AS (
                     INSERT INTO warriors_{} (id, name, dob)
                     VALUES (${}, ${}, ${})
-                    RETURNING id
+                    RETURNING *
                 )
                 INSERT INTO warrior_skills_{} (skill_id, warrior_id)
                 VALUES {}
@@ -85,30 +69,34 @@ pub async fn create_warrior(
                 .unwrap();
 
             let warrior = Warrior {
-                id: uuid.clone(),
-                name: warrior.name.clone(),
-                dob: warrior.dob.clone(),
-                fight_skills: Some(warrior.fight_skills.clone()),
+                id: uuid.to_string(),
+                name: warrior.name,
+                dob: warrior.dob,
+                fight_skills: Some(warrior.fight_skills),
             };
 
-            let warrior_json: String = serde_json::to_string(&warrior.clone()).unwrap();
             state
                 .redis_store
-                .set(&warrior.id, warrior_json.clone())
+                .set(&warrior.id, serde_json::to_string(&warrior).unwrap())
                 .await;
-
-            let search_warrior_key = format!("warrior:{}", warrior.name);
-            let warrior_array = vec![warrior.clone()];
-            let warrior_arr_json: String = serde_json::to_string(&warrior_array).unwrap();
 
             state
                 .redis_store
-                .set(&search_warrior_key, warrior_arr_json)
+                .set(
+                    &format!("warriors:{}", warrior.name),
+                    serde_json::to_string(&vec![&warrior]).unwrap(),
+                )
                 .await;
 
-            let location: String = format!("/warrior/{}", warrior.id);
-            headers.insert(header::LOCATION, location.parse().unwrap());
-            (StatusCode::CREATED, headers, "Successfully created warrior")
+            headers.insert(
+                header::LOCATION,
+                format!("/warrior/{}", warrior.id).parse().unwrap(),
+            );
+            (
+                StatusCode::CREATED,
+                headers,
+                "Warrior created successfully".to_string(),
+            )
         }
         Err(e) => return (StatusCode::BAD_REQUEST, headers, e),
     }

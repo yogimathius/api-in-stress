@@ -4,5 +4,6 @@ pub mod database;
 pub mod handlers;
 pub mod models;
 pub mod redis;
+pub mod retry_policy;
 pub mod utilities;
 pub mod valid_fight_skills;

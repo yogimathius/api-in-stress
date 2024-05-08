@@ -4,10 +4,13 @@ use sqlx::{Decode, Encode, FromRow};
 
 #[derive(Debug, Validate, Deserialize, Serialize, Clone)]
 pub struct NewWarrior {
+    #[validate(min_length = 1, message = "Name is required")]
+    #[validate(max_length = 100, message = "Name is too long")]
     pub name: String,
     pub dob: String,
     #[validate(min_items = 1, message = "At least one skill is required")]
     #[validate(max_items = 20, message = "Maximum of 20 skills allowed")]
+    #[validate(unique_items)]
     pub fight_skills: Vec<String>,
 }
 

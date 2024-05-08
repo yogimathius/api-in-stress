@@ -1,6 +1,9 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
-use crate::models::DbSkill;
+use chrono::NaiveDate;
+use serde_valid::Validate;
+
+use crate::models::{DbSkill, NewWarrior};
 
 #[derive(Clone)]
 pub struct DbFightSkills {
@@ -11,7 +14,6 @@ impl DbFightSkills {
     pub async fn new(db_pool: sqlx::PgPool) -> Self {
         let mut skills = HashMap::new();
 
-        // Initialize skills hashmap with the provided list of skills
         let skill_list: Vec<DbSkill> = sqlx::query_as("SELECT * FROM skills")
             .fetch_all(&db_pool)
             .await
@@ -23,21 +25,24 @@ impl DbFightSkills {
         DbFightSkills { skills }
     }
 
-    pub fn are_valid_skills(&self, skills: &Vec<String>) -> bool {
-        if !(1..=20).contains(&skills.len()) {
-            return false;
-        }
+    pub fn get_valid_skills(&self, warrior: &NewWarrior) -> Result<Vec<i32>, String> {
+        let _ = warrior.validate().map_err(|e| e.to_string())?;
+        let _ = warrior
+            .dob
+            .parse::<NaiveDate>()
+            .map_err(|_| "Invalid date of birth".to_string())?;
 
-        let unique_skills: HashSet<_> = skills.iter().collect();
-
-        skills.iter().all(|skill| self.skills.contains_key(skill))
-            && skills.len() == unique_skills.len()
-    }
-
-    pub fn get_valid_skills(&self, skills: &Vec<std::string::String>) -> Vec<i32> {
-        skills
+        let skill_ids: Result<Vec<_>, _> = warrior
+            .fight_skills
             .iter()
-            .filter_map(|skill| self.skills.get(skill).map(|id| *id))
-            .collect()
+            .map(|skill| {
+                self.skills
+                    .get(skill)
+                    .map(|&id| id)
+                    .ok_or_else(|| format!("Invalid skill: {}", skill))
+            })
+            .collect();
+
+        skill_ids
     }
 }
