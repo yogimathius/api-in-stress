@@ -27,7 +27,7 @@ pub async fn search_warriors(
         } else {
             let warriors: Vec<Warrior> = sqlx::query_as(SEARCH_WARRIORS)
                 .bind(t)
-                .fetch_all(&state.primary_db_store)
+                .fetch_all(&state.database.primary_pool)
                 .await
                 .map_err(|err| internal_error(err))
                 .unwrap_or_else(|_| Vec::new());

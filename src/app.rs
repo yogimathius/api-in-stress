@@ -5,7 +5,6 @@ use crate::handlers::{
     search_warriors::search_warriors,
 };
 use crate::redis::RedisDatabase;
-use crate::valid_fight_skills::DbFightSkills;
 use axum::{
     http::Request,
     routing::{get, post},
@@ -23,7 +22,6 @@ impl Application {
     pub async fn new() -> Router {
         let database = Database::new().await;
         let redis_store = RedisDatabase::new().await;
-        let valid_skills = DbFightSkills::new(database.primary_pool.clone()).await;
         let debug = std::env::var("DEBUG").unwrap_or("false".to_string());
         if debug == "true" {
             println!("Debug mode enabled");
@@ -34,11 +32,9 @@ impl Application {
         let database_shard = std::env::var("SHARD").unwrap();
 
         let app_state = AppState {
-            db_store: database.pool,
-            primary_db_store: database.primary_pool,
+            database: database,
             database_shard: database_shard,
             redis_store: redis_store,
-            valid_skills: valid_skills,
         };
 
         Router::new()

@@ -10,7 +10,7 @@ pub async fn count_warriors(
     let query = "SELECT COUNT(*) FROM warriors;";
 
     let row = sqlx::query(query)
-        .fetch_one(&state.primary_db_store)
+        .fetch_one(&state.database.primary_pool)
         .await
         .map_err(|err| internal_error(err))?;
 

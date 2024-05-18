@@ -23,7 +23,7 @@ pub async fn get_warrior(
 
     match sqlx::query_as(&GET_WARRIOR)
         .bind(&user_id)
-        .fetch_optional(&state.primary_db_store)
+        .fetch_optional(&state.database.primary_pool)
         .await
     {
         Ok(Some(warrior)) => {

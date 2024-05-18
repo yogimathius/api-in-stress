@@ -1,4 +1,4 @@
-use crate::{redis::RedisDatabase, utilities::internal_error};
+use crate::{database::Database, redis::RedisDatabase, utilities::internal_error};
 use axum::{
     async_trait,
     extract::{FromRef, FromRequestParts},
@@ -10,15 +10,12 @@ use sqlx::postgres::PgPool;
 pub struct DatabaseConnection(pub sqlx::pool::PoolConnection<sqlx::Postgres>);
 type RedisPool = Pool<RedisConnectionManager>;
 pub struct RedisPoolWrapper(pub RedisPool);
-use crate::valid_fight_skills::DbFightSkills;
 
 #[derive(Clone)]
 pub struct AppState {
-    pub(crate) db_store: sqlx::PgPool,
-    pub(crate) primary_db_store: sqlx::PgPool,
+    pub(crate) database: Database,
     pub(crate) database_shard: String,
     pub(crate) redis_store: RedisDatabase,
-    pub(crate) valid_skills: DbFightSkills,
 }
 
 #[async_trait]

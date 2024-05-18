@@ -1,9 +1,15 @@
+use chrono::NaiveDate;
 use sqlx::postgres::PgPoolOptions;
-use std::time::Duration;
+use std::{collections::HashMap, time::Duration};
 
+use crate::models::{DbSkill, NewWarrior};
+use serde_valid::Validate;
+
+#[derive(Clone)]
 pub struct Database {
     pub pool: sqlx::PgPool,
     pub primary_pool: sqlx::PgPool,
+    pub skills: HashMap<String, i32>,
 }
 
 impl Database {
@@ -17,8 +23,42 @@ impl Database {
             "postgres://postgres:pass123@postgres:5432/warriors".to_string();
 
         let primary_pool = create_pool(primary_db_connection_str).await;
+        let mut skills = HashMap::new();
 
-        Self { pool, primary_pool }
+        let skill_list: Vec<DbSkill> = sqlx::query_as("SELECT * FROM skills")
+            .fetch_all(&primary_pool)
+            .await
+            .expect("Failed to fetch skills from the database");
+
+        for skill in skill_list {
+            skills.insert(skill.name, skill.id);
+        }
+        Self {
+            pool,
+            primary_pool,
+            skills,
+        }
+    }
+
+    pub fn get_valid_skills(&self, warrior: &NewWarrior) -> Result<Vec<i32>, String> {
+        let _ = warrior.validate().map_err(|e| e.to_string())?;
+        let _ = warrior
+            .dob
+            .parse::<NaiveDate>()
+            .map_err(|_| "Invalid date of birth".to_string())?;
+
+        let skill_ids: Result<Vec<_>, _> = warrior
+            .fight_skills
+            .iter()
+            .map(|skill| {
+                self.skills
+                    .get(skill)
+                    .map(|&id| id)
+                    .ok_or_else(|| format!("Invalid skill: {}", skill))
+            })
+            .collect();
+
+        skill_ids
     }
 }
 

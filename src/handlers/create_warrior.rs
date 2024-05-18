@@ -18,7 +18,7 @@ pub async fn create_warrior(
     let mut headers = HeaderMap::new();
     headers.insert("content-type", "application/json".parse().unwrap());
 
-    match state.valid_skills.get_valid_skills(&warrior) {
+    match state.database.get_valid_skills(&warrior) {
         Ok(skill_ids) => {
             let skill_count = skill_ids.len();
             let uuid = Uuid::new_v4().to_string();
@@ -63,7 +63,7 @@ pub async fn create_warrior(
                 .bind(&uuid)
                 .bind(&warrior.name)
                 .bind(&warrior.dob)
-                .fetch_one(&state.db_store)
+                .fetch_one(&state.database.pool)
                 .await
                 .map_err(|err| internal_error(err))
                 .unwrap();

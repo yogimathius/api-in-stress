@@ -24,7 +24,7 @@ LEFT JOIN
 LEFT JOIN 
     skills ON warrior_skills.skill_id = skills.id
 WHERE 
-    warriors.name ILIKE $1
+    warriors.name = $1
 GROUP BY 
     warriors.id, warriors.name, warriors.dob
 LIMIT 
