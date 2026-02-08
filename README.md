@@ -1,56 +1,34 @@
-# Project Name
+# API in Stress
 
-## Overview
+Rust API project focused on reliability and behavior under load.
 
-This project is an API implementation with a full specification. It leverages various dependencies to achieve its functionality.
+## Purpose
+- Implement a containerized API that can be load-tested under constrained resources.
+- Provide a practical stress-testing target with PostgreSQL + Redis integration.
 
-## Dependencies
+## Current Implementation
+- Language/runtime: Rust + Tokio + Axum.
+- Storage/cache: PostgreSQL via `sqlx` and Redis via `bb8-redis`.
+- Deployment: Docker + Docker Compose, with Nginx config included.
+- Repository contains architecture and benchmark artifacts (`API_Under_Stress.pdf`, `results-*.png`, `rust-architecture.png`).
 
-This project relies on the following dependencies:
+## API Surface
+Defined in `src/app.rs`:
+- `POST /warrior`
+- `GET /warrior/:id`
+- `GET /warrior?t=<search_term>`
+- `GET /counting-warriors`
 
-- **axum:** 0.7.5
-- **bb8:** 0.8
-- **bb8-postgres:** 0.7.0
-- **bb8-redis:** 0.14.0
-- **dotenvy:** 0.15
-- **env_logger:** 0.9
-- **hyper:** 1.0
-- **hyper-util:** 0.1
-- **redis:** 0.24.0
-- **serde:** 1.0
-- **sqlx:** 0.6
-- **tokio:** 1.37.0
-- **tokio-postgres:** 0.7.2
-- **tower:** 0.4
-- **tracing:** 0.1
-- **tracing-subscriber:** 0.3
-- **openssl:** \*
-- **tower-http:** 0.5.2
-- **serde_json:** 1.0.115
-- **uuid:** 1.8.0
+## Testing and Verification
+- Unit/integration tests (Rust): `cargo test`
+- Local services helper: `./run-services.sh`
+- Full stack via Compose: `docker-compose up --build`
 
-## Dockerization
+## Current Status
+- Core endpoint set is implemented and wired to database/cache infrastructure.
+- The project is structured for stress testing, but benchmark claims should always be tied to a reproducible run command and machine profile.
 
-This project is dockerized with one Dockerfile to build the server:
-
-1. **server Dockerfile:** Contains configurations for the API server.
-
-## Build Instructions
-
-1. To build and run the db and redis in the background:
-
-```
-chmod +x run-services.sh && ./run-services.sh
-```
-
-2. To build and run the project's RESTful API:
-
-```bash
-docker-compose build && docker-compose -f docker-compose.yml up
-```
-
-3. To run the API in debug mode:
-
-```
-docker-compose -f docker-compose.yml --env-file debug.env up
-```
+## Next Steps
+- Add a reproducible benchmark procedure (commands, dataset, hardware profile, expected output format).
+- Publish a concise performance report from the latest benchmark run.
+- Add CI that runs tests and basic smoke checks for container startup.
